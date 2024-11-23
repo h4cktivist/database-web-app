@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Билеты{% endblock %}
+
+{% block content %}
+    <h2>Билеты</h2>
+    <a href="{% url 'add_ticket' %}" class="btn btn-success mb-3">Добавить билет</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Сеанс</th>
+                <th>Цена</th>
+                <th>Ряд</th>
+                <th>Место</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+                <tr>
+                    <td>{{ ticket.ticket_id }}</td>
+                    <td>{{ ticket.session }}</td>
+                    <td>{{ ticket.price }}</td>
+                    <td>{{ ticket.row_number }}</td>
+                    <td>{{ ticket.seat_number }}</td>
+                    <td>
+                        <a href="{% url 'ticket_detail' ticket.ticket_id %}" class="btn btn-info btn-sm">Детали</a>
+                        <a href="{% url 'edit_ticket' ticket.ticket_id %}" class="btn btn-warning btn-sm">Редактировать</a>
+                        <a href="{% url 'delete_ticket' ticket.ticket_id %}" class="btn btn-danger btn-sm">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if tickets.has_other_pages %}
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if tickets.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ tickets.previous_page_number }}">&laquo;</a></li>
+                {% endif %}
+                {% for num in tickets.paginator.page_range %}
+                    <li class="page-item{% if tickets.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endfor %}
+                {% if tickets.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ tickets.next_page_number }}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

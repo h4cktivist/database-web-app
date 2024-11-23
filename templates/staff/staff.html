@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Сотрудники{% endblock %}
+
+{% block content %}
+    <h2>Сотрудники</h2>
+    <a href="{% url 'add_staff' %}" class="btn btn-success mb-3">Добавить сотрудника</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>ФИО</th>
+                <th>Должность</th>
+                <th>Телефон</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff_member in staff %}
+                <tr>
+                    <td>{{ staff_member.staff_id }}</td>
+                    <td>{{ staff_member.first_name }} {{ staff_member.last_name }} {{ staff_member.middle_name }}</td>
+                    <td>{{ staff_member.position }}</td>
+                    <td>{{ staff_member.phone }}</td>
+                    <td>
+                        <a href="{% url 'staff_detail' staff_member.staff_id %}" class="btn btn-info btn-sm">Детали</a>
+                        <a href="{% url 'edit_staff' staff_member.staff_id %}" class="btn btn-warning btn-sm">Редактировать</a>
+                        <a href="{% url 'delete_staff' staff_member.staff_id %}" class="btn btn-danger btn-sm">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if staff.has_other_pages %}
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if staff.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ staff.previous_page_number }}">&laquo;</a></li>
+                {% endif %}
+                {% for num in staff.paginator.page_range %}
+                    <li class="page-item{% if staff.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endfor %}
+                {% if staff.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ staff.next_page_number }}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

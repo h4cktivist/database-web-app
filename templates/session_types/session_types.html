@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Типы сеансов{% endblock %}
+
+{% block content %}
+    <h2>Типы сеансов</h2>
+    <a href="{% url 'add_position' %}" class="btn btn-success mb-3">Добавить тип сеанса</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session_type in session_types %}
+                <tr>
+                    <td>{{ session_type.session_type_id }}</td>
+                    <td>{{ session_type.name }}</td>
+                    <td>
+                        <a href="{% url 'session_type_detail' session_type.session_type_id %}" class="btn btn-info btn-sm">Детали</a>
+                        <a href="{% url 'edit_session_type' session_type.session_type_id %}" class="btn btn-warning btn-sm">Редактировать</a>
+                        <a href="{% url 'delete_session_type' session_type.session_type_id %}" class="btn btn-danger btn-sm">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

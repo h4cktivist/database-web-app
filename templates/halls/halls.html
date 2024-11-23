@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Залы{% endblock %}
+
+{% block content %}
+    <h2>Залы</h2>
+    <a href="{% url 'add_hall' %}" class="btn btn-success mb-3">Добавить зал</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Вместимость</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for hall in halls %}
+                <tr>
+                    <td>{{ hall.hall_id }}</td>
+                    <td>{{ hall.name }}</td>
+                    <td>{{ hall.capacity }}</td>
+                    <td>
+                        <a href="{% url 'hall_detail' hall.hall_id %}" class="btn btn-info btn-sm">Детали</a>
+                        <a href="{% url 'edit_hall' hall.hall_id %}" class="btn btn-warning btn-sm">Редактировать</a>
+                        <a href="{% url 'delete_hall' hall.hall_id %}" class="btn btn-danger btn-sm">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

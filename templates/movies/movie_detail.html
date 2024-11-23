@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали фильма{% endblock %}
+
+{% block content %}
+    <h2>{{ movie.title }}</h2>
+    <p><strong>ID:</strong> {{ movie.movie_id }}</p>
+    <p><strong>Название:</strong> {{ movie.title }}</p>
+    <p><strong>Жанр:</strong> {{ movie.genre }}</p>
+    <p><strong>Длительность (мин.):</strong> {{ movie.duration }}</p>
+    <p><strong>Ограничение:</strong> {{ movie.age_restriction }}</p>
+    <p><strong>Рейтинг:</strong> {{ movie.rating }}</p>
+    <p><strong>Описание:</strong> {{ movie.description }}</p>
+    <a href="{% url 'movies' %}" class="btn btn-secondary">Назад к списку</a>
+{% endblock %}

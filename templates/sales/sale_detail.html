@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали продажи{% endblock %}
+
+{% block content %}
+    <h2>Детали продажи</h2>
+    <p><strong>ID:</strong> {{ sale.sale_id }}</p>
+    <p><strong>Билет:</strong> {{ sale.ticket }}</p>
+    <p><strong>Сотрудник:</strong> {{ sale.staff }}</p>
+    <p><strong>Дата:</strong> {{ sale.date }}</p>
+    <p><strong>Тип оплаты:</strong> {{ sale.payment_type }}</p>
+    <p><strong>Покупатель:</strong> {{ sale.customer }}</p>
+    <a href="{% url 'sales' %}" class="btn btn-secondary">Назад к списку продаж</a>
+{% endblock %}

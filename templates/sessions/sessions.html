@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Сеансы{% endblock %}
+
+{% block content %}
+    <h2>Сеансы</h2>
+    <a href="{% url 'add_session' %}" class="btn btn-success mb-3">Добавить сеанс</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Тип сеанса</th>
+                <th>Фильм</th>
+                <th>Зал</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+                <tr>
+                    <td>{{ session.session_id }}</td>
+                    <td>{{ session.session_date }}</td>
+                    <td>{{ session.session_time }}</td>
+                    <td>{{ session.session_type }}</td>
+                    <td>{{ session.movie }}</td>
+                    <td>{{ session.hall }}</td>
+                    <td>
+                        <a href="{% url 'session_detail' session.session_id %}" class="btn btn-info btn-sm">Детали</a>
+                        <a href="{% url 'edit_session' session.session_id %}" class="btn btn-warning btn-sm">Редактировать</a>
+                        <a href="{% url 'delete_session' session.session_id %}" class="btn btn-danger btn-sm">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if sessions.has_other_pages %}
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if sessions.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ sessions.previous_page_number }}">&laquo;</a></li>
+                {% endif %}
+                {% for num in sessions.paginator.page_range %}
+                    <li class="page-item{% if sessions.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endfor %}
+                {% if sessions.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ sessions.next_page_number }}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

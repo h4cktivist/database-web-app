@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали сеанса{% endblock %}
+
+{% block content %}
+    <h2>Детали сеанса</h2>
+    <p><strong>ID:</strong> {{ session.session_id }}</p>
+    <p><strong>Дата:</strong> {{ session.session_date }}</p>
+    <p><strong>Время:</strong> {{ session.session_time }}</p>
+    <p><strong>Тип сеанса:</strong> {{ session.session_type }}</p>
+    <p><strong>Фильм:</strong> {{ session.movie }}</p>
+    <p><strong>Зал:</strong> {{ session.hall }}</p>
+    <a href="{% url 'sessions' %}" class="btn btn-secondary">Назад к списку</a>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали покупателя{% endblock %}
+
+{% block content %}
+    <h2>Детали покупателя</h2>
+    <p><strong>ID:</strong> {{ customer.customer_id }}</p>
+    <p><strong>Имя:</strong> {{ customer.first_name }}</p>
+    <p><strong>Фамилия:</strong> {{ customer.last_name }}</p>
+    <p><strong>Телефон:</strong> {{ customer.phone }}</p>
+    <p><strong>Email:</strong> {{ customer.email }}</p>
+    <a href="{% url 'customers' %}" class="btn btn-secondary">Назад к списку</a>
+{% endblock %}

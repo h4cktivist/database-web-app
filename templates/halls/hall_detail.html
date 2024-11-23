@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали зала{% endblock %}
+
+{% block content %}
+    <h2>Детали зала</h2>
+    <p><strong>ID:</strong> {{ hall.hall_id }}</p>
+    <p><strong>Название:</strong> {{ hall.name }}</p>
+    <p><strong>Вместимость:</strong> {{ hall.capacity }}</p>
+    <a href="{% url 'halls' %}" class="btn btn-secondary">Назад к списку</a>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали сотрудника{% endblock %}
+
+{% block content %}
+    <h2>Детали сотрудника</h2>
+    <p><strong>ID:</strong> {{ staff.staff_id }}</p>
+    <p><strong>ФИО:</strong> {{ staff.first_name }} {{ staff.last_name }} {{ staff.middle_name }}</p>
+    <p><strong>Должность:</strong> {{ staff.position }}</p>
+    <p><strong>Телефон:</strong> {{ staff.phone }}</p>
+    <a href="{% url 'staff' %}" class="btn btn-secondary">Назад к списку</a>
+{% endblock %}

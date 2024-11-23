@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Продажи{% endblock %}
+
+{% block content %}
+    <h2>Продажи</h2>
+    <a href="{% url 'add_sale' %}" class="btn btn-success mb-3">Добавить продажу</a>
+    <table class="table table-striped" style="width: 1500px;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Билет</th>
+                <th>Сотрудник</th>
+                <th>Дата</th>
+                <th>Тип оплаты</th>
+                <th>Покупатель</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.sale_id }}</td>
+                    <td>{{ sale.ticket }}</td>
+                    <td>{{ sale.staff }}</td>
+                    <td>{{ sale.date }}</td>
+                    <td>{{ sale.payment_type }}</td>
+                    <td>{{ sale.customer }}</td>
+                    <td>
+                        <a href="{% url 'sale_detail' sale.sale_id %}" class="btn btn-info btn-sm">Детали</a>
+                        <a href="{% url 'edit_sale' sale.sale_id %}" class="btn btn-warning btn-sm">Редактировать</a>
+                        <a href="{% url 'delete_sale' sale.sale_id %}" class="btn btn-danger btn-sm">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if sales.has_other_pages %}
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if sales.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ sales.previous_page_number }}">&laquo;</a></li>
+                {% endif %}
+                {% for num in sales.paginator.page_range %}
+                    <li class="page-item{% if sales.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endfor %}
+                {% if sales.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ sales.next_page_number }}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

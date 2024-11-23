@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали типа сеанса{% endblock %}
+
+{% block content %}
+    <h2>Детали типа сеанса</h2>
+    <p><strong>ID:</strong> {{ session_type.session_type_id }}</p>
+    <p><strong>Название:</strong> {{ session_type.name }}</p>
+    <a href="{% url 'session_types' %}" class="btn btn-secondary">Назад к списку</a>
+{% endblock %}

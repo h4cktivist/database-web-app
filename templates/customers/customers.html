@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Покупатели{% endblock %}
+
+{% block content %}
+    <h2>Покупатели</h2>
+    <a href="{% url 'add_customer' %}" class="btn btn-success mb-3">Добавить покупателя</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Телефон</th>
+                <th>Email</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.customer_id }}</td>
+                    <td>{{ customer.first_name }}</td>
+                    <td>{{ customer.last_name }}</td>
+                    <td>{{ customer.phone }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>
+                        <a href="{% url 'customer_detail' customer.customer_id %}" class="btn btn-info btn-sm">Детали</a>
+                        <a href="{% url 'edit_customer' customer.customer_id %}" class="btn btn-warning btn-sm">Редактировать</a>
+                        <a href="{% url 'delete_customer' customer.customer_id %}" class="btn btn-danger btn-sm">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if customers.has_other_pages %}
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if customers.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ customers.previous_page_number }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                    </li>
+                {% endif %}
+                {% for num in customers.paginator.page_range %}
+                    <li class="page-item{% if customers.number == num %} active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+                {% if customers.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ customers.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}
