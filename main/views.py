@@ -1,13 +1,9 @@
-import csv
 import threading
-from datetime import datetime, timedelta
-
 import openpyxl
+
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import F
-from django.db.models.functions import Concat
 
 from .models import Customers, Halls, Movies, Positions, SessionTypes, Staff, Sessions, Tickets, Sales
 from .forms import CustomerForm, HallsForm, MoviesForm, PositionsForm, SessionTypesForm, StaffForm, SessionsForm, TicketsForm, SalesForm
@@ -538,11 +534,11 @@ def export_to_excel(queryset):
         'ID', 'Дата', 'Сотрудник', 'Покупатель', 'Стоимость', 'Дата и время сеанса'
     ])
     for sale in queryset:
-        staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"  # Adjust as needed
-        customer_name = f"{sale.customer.first_name} {sale.customer.last_name}" # Adjust as needed
+        staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
+        customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
         session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
         sheet.append([
-            sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime  # Add other relevant fields
+            sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime
         ])
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
