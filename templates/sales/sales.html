@@ -5,6 +5,38 @@
 {% block content %}
     <h2>Продажи</h2>
     <a href="{% url 'add_sale' %}" class="btn btn-success mb-3">Добавить продажу</a>
+
+    <form method="get">
+        <div class="form-group">
+            <label for="start_date">Дата начала:</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+        </div>
+        <div class="form-group">
+            <label for="end_date">Дата окончания:</label>
+            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+        </div>
+        <div class="form-group">
+            <label for="staff">Сотрудник:</label>
+            <select class="form-control" id="staff" name="staff">
+                <option value="">Все сотрудники</option>
+                {% for staff in staffs %}
+                    <option value="{{ staff.staff_id }}" {% if staff.staff_id == staff %}selected{% endif %}>{{ staff }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="customer">Покупатель:</label>
+            <select class="form-control" id="customer" name="customer">
+                <option value="">Все покупатели</option>
+                {% for customer in customers %}
+                    <option value="{{ customer.customer_id }}" {% if customer.customer_id == customer %}selected{% endif %}>{{ customer }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Фильтр</button>
+    </form>
+    <br>
+
     <table class="table table-striped" style="width: 1500px;">
         <thead>
             <tr>
@@ -40,13 +72,13 @@
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-center">
                 {% if sales.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ sales.previous_page_number }}">&laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ sales.previous_page_number }}">&laquo;</a></li>
                 {% endif %}
                 {% for num in sales.paginator.page_range %}
-                    <li class="page-item{% if sales.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    <li class="page-item{% if sales.number == num %} active{% endif %}"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ num }}">{{ num }}</a></li>
                 {% endfor %}
                 {% if sales.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ sales.next_page_number }}">&raquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ sales.next_page_number }}">&raquo;</a></li>
                 {% endif %}
             </ul>
         </nav>

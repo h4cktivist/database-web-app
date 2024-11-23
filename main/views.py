@@ -1,5 +1,12 @@
+import csv
+import threading
+from datetime import datetime, timedelta
+
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import F
+from django.db.models.functions import Concat
 
 from .models import Customers, Halls, Movies, Positions, SessionTypes, Staff, Sessions, Tickets, Sales
 from .forms import CustomerForm, HallsForm, MoviesForm, PositionsForm, SessionTypesForm, StaffForm, SessionsForm, TicketsForm, SalesForm
@@ -280,8 +287,19 @@ def delete_staff(request, staff_id):
 
 
 def sessions(request):
-    session_list = Sessions.objects.all()
-    paginator = Paginator(session_list, 25)
+    queryset = Sessions.objects.all()
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    session_type = request.GET.get('session_type')
+
+    if start_date:
+        queryset = queryset.filter(session_date__gte=start_date)
+    if end_date:
+        queryset = queryset.filter(session_date__lte=end_date)
+    if session_type:
+        queryset = queryset.filter(session_type_id=session_type)
+
+    paginator = Paginator(queryset, 25)  # Пагинация применяется к отфильтрованному queryset
     page_number = request.GET.get('page')
     try:
         page_obj = paginator.get_page(page_number)
@@ -289,7 +307,15 @@ def sessions(request):
         page_obj = paginator.get_page(1)
     except EmptyPage:
         page_obj = paginator.get_page(paginator.num_pages)
-    return render(request, 'sessions/sessions.html', {'sessions': page_obj})
+
+    context = {
+        'sessions': page_obj,
+        'session_types': SessionTypes.objects.all(),
+        'start_date': start_date,
+        'end_date': end_date,
+        'session_type': session_type,
+    }
+    return render(request, 'sessions/sessions.html', context)
 
 
 def session_detail(request, session_id):
@@ -329,8 +355,16 @@ def delete_session(request, session_id):
 
 
 def tickets(request):
-    ticket_list = Tickets.objects.all()
-    paginator = Paginator(ticket_list, 25)
+    queryset = Tickets.objects.all()
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+
+    if min_price:
+        queryset = queryset.filter(price__gte=min_price)
+    if max_price:
+        queryset = queryset.filter(price__lte=max_price)
+
+    paginator = Paginator(queryset, 25)
     page_number = request.GET.get('page')
     try:
         page_obj = paginator.get_page(page_number)
@@ -338,7 +372,13 @@ def tickets(request):
         page_obj = paginator.get_page(1)
     except EmptyPage:
         page_obj = paginator.get_page(paginator.num_pages)
-    return render(request, 'tickets/tickets.html', {'tickets': page_obj})
+
+    context = {
+        'tickets': page_obj,
+        'min_price': min_price,
+        'max_price': max_price
+    }
+    return render(request, 'tickets/tickets.html', context)
 
 
 def ticket_detail(request, ticket_id):
@@ -378,8 +418,22 @@ def delete_ticket(request, ticket_id):
 
 
 def sales(request):
-    sale_list = Sales.objects.all()
-    paginator = Paginator(sale_list, 25)
+    queryset = Sales.objects.all()
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    staff = request.GET.get('staff')
+    customer = request.GET.get('customer')
+
+    if start_date:
+        queryset = queryset.filter(date__gte=start_date)
+    if end_date:
+        queryset = queryset.filter(date__lte=end_date)
+    if staff:
+        queryset = queryset.filter(staff_id=staff)
+    if customer:
+        queryset = queryset.filter(customer_id=customer)
+
+    paginator = Paginator(queryset, 25)
     page_number = request.GET.get('page')
     try:
         page_obj = paginator.get_page(page_number)
@@ -387,7 +441,17 @@ def sales(request):
         page_obj = paginator.get_page(1)
     except EmptyPage:
         page_obj = paginator.get_page(paginator.num_pages)
-    return render(request, 'sales/sales.html', {'sales': page_obj})
+
+    context = {
+        'sales': page_obj,
+        'staffs': Staff.objects.all(),
+        'customers': Customers.objects.all(),
+        'start_date': start_date,
+        'end_date': end_date,
+        'staff': staff,
+        'customer': customer,
+    }
+    return render(request, 'sales/sales.html', context)
 
 
 def sale_detail(request, sale_id):

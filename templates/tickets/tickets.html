@@ -5,6 +5,20 @@
 {% block content %}
     <h2>Билеты</h2>
     <a href="{% url 'add_ticket' %}" class="btn btn-success mb-3">Добавить билет</a>
+
+    <form method="get">
+        <div class="form-group">
+            <label for="min_price">Минимальная цена:</label>
+            <input type="number" class="form-control" id="min_price" name="min_price" value="{{ min_price }}">
+        </div>
+        <div class="form-group">
+            <label for="max_price">Максимальная цена:</label>
+            <input type="number" class="form-control" id="max_price" name="max_price" value="{{ max_price }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Фильтр</button>
+    </form>
+    <br>
+
     <table class="table table-striped">
         <thead>
             <tr>
@@ -38,13 +52,13 @@
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-center">
                 {% if tickets.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ tickets.previous_page_number }}">&laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?{% if min_price %}min_price={{ min_price }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if row_number %}row_number={{ row_number }}&{% endif %}page={{ tickets.previous_page_number }}">&laquo;</a></li>
                 {% endif %}
                 {% for num in tickets.paginator.page_range %}
-                    <li class="page-item{% if tickets.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    <li class="page-item{% if tickets.number == num %} active{% endif %}"><a class="page-link" href="?{% if min_price %}min_price={{ min_price }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if row_number %}row_number={{ row_number }}&{% endif %}page={{ num }}">{{ num }}</a></li>
                 {% endfor %}
                 {% if tickets.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ tickets.next_page_number }}">&raquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?{% if min_price %}min_price={{ min_price }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if row_number %}row_number={{ row_number }}&{% endif %}page={{ tickets.next_page_number }}">&raquo;</a></li>
                 {% endif %}
             </ul>
         </nav>

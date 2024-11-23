@@ -5,6 +5,29 @@
 {% block content %}
     <h2>Сеансы</h2>
     <a href="{% url 'add_session' %}" class="btn btn-success mb-3">Добавить сеанс</a>
+
+    <form method="get">
+        <div class="form-group">
+            <label for="start_date">Дата начала:</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+        </div>
+        <div class="form-group">
+            <label for="end_date">Дата окончания:</label>
+            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+        </div>
+        <div class="form-group">
+            <label for="session_type">Тип сеанса:</label>
+            <select class="form-control" id="session_type" name="session_type">
+                <option value="">Все типы</option>
+                {% for session_type in session_types %}
+                    <option value="{{ session_type.session_type_id }}" {% if session_type.session_type_id == session_type %}selected{% endif %}>{{ session_type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Фильтр</button>
+    </form>
+    <br>
+
     <table class="table table-striped">
         <thead>
             <tr>
@@ -40,13 +63,13 @@
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-center">
                 {% if sessions.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ sessions.previous_page_number }}">&laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if session_type %}session_type={{ session_type }}&{% endif %}page={{ sessions.previous_page_number }}">&laquo;</a></li>
                 {% endif %}
                 {% for num in sessions.paginator.page_range %}
-                    <li class="page-item{% if sessions.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    <li class="page-item{% if sessions.number == num %} active{% endif %}"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if session_type %}session_type={{ session_type }}&{% endif %}page={{ num }}">{{ num }}</a></li>
                 {% endfor %}
                 {% if sessions.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ sessions.next_page_number }}">&raquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if session_type %}session_type={{ session_type }}&{% endif %}page={{ sessions.next_page_number }}">&raquo;</a></li>
                 {% endif %}
             </ul>
         </nav>
