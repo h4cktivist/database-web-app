@@ -2,6 +2,7 @@ import csv
 import threading
 from datetime import datetime, timedelta
 
+import openpyxl
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -488,3 +489,63 @@ def delete_sale(request, sale_id):
         sale.delete()
         return redirect('sales')
     return render(request, 'delete.html', {'sale': sale})
+
+
+def report(request):
+    queryset = Sales.objects.all()
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    staff = request.GET.get('staff')
+    customer = request.GET.get('customer')
+
+    if start_date:
+        queryset = queryset.filter(date__gte=start_date)
+    if end_date:
+        queryset = queryset.filter(date__lte=end_date)
+    if staff:
+        queryset = queryset.filter(staff_id=staff)
+    if customer:
+        queryset = queryset.filter(customer_id=customer)
+
+    if request.method == 'POST' and 'export_excel' in request.POST:
+        return export_to_excel(queryset)
+
+    paginator = Paginator(queryset, 25)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    context = {
+        'sales': page_obj,
+        'staffs': Staff.objects.all(),
+        'customers': Customers.objects.all(),
+        'start_date': start_date,
+        'end_date': end_date,
+        'staff': staff,
+        'customer': customer,
+    }
+    return render(request, 'report/report.html', context)
+
+
+def export_to_excel(queryset):
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.append([
+        'ID', 'Дата', 'Сотрудник', 'Покупатель', 'Стоимость', 'Дата и время сеанса'
+    ])
+    for sale in queryset:
+        staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"  # Adjust as needed
+        customer_name = f"{sale.customer.first_name} {sale.customer.last_name}" # Adjust as needed
+        session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
+        sheet.append([
+            sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime  # Add other relevant fields
+        ])
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="sales_report.xlsx"'
+    workbook.save(response)
+    return response

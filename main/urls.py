@@ -56,4 +56,6 @@ urlpatterns = [
     path('sales/<int:sale_id>/edit/', views.edit_sale, name='edit_sale'),
     path('sales/<int:sale_id>/delete/', views.delete_sale, name='delete_sale'),
     path('sales/<int:sale_id>/', views.sale_detail, name='sale_detail'),
+
+    path('report/', views.report, name='report'),
 ]
