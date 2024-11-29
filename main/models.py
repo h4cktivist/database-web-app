@@ -83,7 +83,7 @@ class Sales(models.Model):
         db_table = 'sales'
 
     def __str__(self):
-        return f'Продажа {self.sale_id} | {self.ticket.price} руб.'
+        return f'Продажа {self.sale_id} | {self.ticket.price if self.ticket is not None else ""} руб.'
 
 
 class SessionTypes(models.Model):
@@ -113,7 +113,7 @@ class Sessions(models.Model):
         db_table = 'sessions'
 
     def __str__(self):
-        return f'{self.session_date} {self.session_time} | {self.movie.title if self.movie is not None else None}'
+        return f'{self.session_date} {self.session_time} | {self.movie.title if self.movie is not None else ""}'
 
 
 class Staff(models.Model):
