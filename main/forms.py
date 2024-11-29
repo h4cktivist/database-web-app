@@ -126,7 +126,7 @@ class SessionsForm(forms.ModelForm):
             'hall': 'Зал',
         }
         widgets = {
-            'session_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'required': True}),
+            'session_date': forms.DateInput(format='%Y-%m-%d', attrs={'class': 'form-control', 'type': 'date', 'required': True}),
             'session_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'required': True}),
             'session_type': forms.Select(attrs={'class': 'form-control', 'required': True}),
             'movie': forms.Select(attrs={'class': 'form-control', 'required': True}),
@@ -155,11 +155,15 @@ class TicketsForm(forms.ModelForm):
 class SalesForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        unsold_tickets = Tickets.objects.exclude(
-            session__in=Sales.objects.all().values_list('ticket__session', flat=True)
-        )
+        if self.instance.pk:
+            self.fields['ticket'].queryset = Tickets.objects.filter(pk=self.instance.ticket.pk) | Tickets.objects.exclude(
+                session__in=Sales.objects.exclude(pk=self.instance.pk).values_list('ticket__session', flat=True)
+            )
+        else:
+            self.fields['ticket'] = Tickets.objects.exclude(
+                session__in=Sales.objects.all().values_list('ticket__session', flat=True)
+            )
         cashiers = Staff.objects.filter(position__title='Кассир')
-        self.fields['ticket'].queryset = unsold_tickets
         self.fields['staff'].queryset = cashiers
 
     def clean(self):
@@ -187,7 +191,7 @@ class SalesForm(forms.ModelForm):
         widgets = {
             'ticket': forms.Select(attrs={'class': 'form-control', 'required': True}),
             'staff': forms.Select(attrs={'class': 'form-control', 'required': True}),
-            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'required': True}),
+            'date': forms.DateInput(format='%Y-%m-%d', attrs={'class': 'form-control', 'type': 'date', 'required': True}),
             'payment_type': forms.Select(choices=PAYMENT_TYPES, attrs={'class': 'form-control', 'required': True}),
             'customer': forms.Select(attrs={'class': 'form-control', 'required': True}),
         }
