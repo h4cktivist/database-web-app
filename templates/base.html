@@ -20,15 +20,12 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-      <a class="navbar-brand" href="#">База данных кинотеатра</a>
+      <a class="navbar-brand" href="{% url 'index' %}">База данных кинотеатра</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
-          <li class="nav-item active">
-            <a class="nav-link" href="{% url 'index' %}">Главная <span class="sr-only">(current)</span></a>
-          </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'customers' %}">Покупатели</a>
           </li>
@@ -58,6 +55,12 @@
           </li>
           <li class="nav-item active">
             <a class="nav-link" href="{% url 'report' %}">Отчет по продажам</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'staff-report' %}">Отчет о сотрудниках</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'movies-report' %}">Отчет о фильмах</a>
           </li>
         </ul>
       </div>

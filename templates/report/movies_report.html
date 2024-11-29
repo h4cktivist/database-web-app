@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Отчет{% endblock %}
+
+{% block content %}
+    <h2>Отчет по фильмам</h2>
+
+    <form method="get">
+        <div class="form-group">
+            <label for="staff">Фильм:</label>
+            <select class="form-control" id="staff" name="movie">
+                <option value="">Все фильмы</option>
+                {% for movie in all_movies %}
+                    <option value="{{ movie.movie_id }}" {% if movie.movie_id == movie %}selected{% endif %}>{{ movie }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="genre-filter">Жанр:</label>
+            <select class="form-control" id="genre-filter" name="genre">
+                <option value="">Все жанры</option>
+                {% for genre in all_genres %}
+                    <option value="{{ genre }}">{{ genre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Фильтр</button>
+    </form>
+    <br>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="export_excel" class="btn btn-info mb-3">Экспорт в Excel и Word</button>
+    </form>
+    <br>
+
+    <table class="table table-striped" style="width: 1500px;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Жанр</th>
+                <th>Длительность</th>
+                <th>Рейтинг</th>
+                <th>Кол-во билетов</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in movies %}
+                <tr>
+                    <td>{{ m.movie_id }}</td>
+                    <td>{{ m.title }}</td>
+                    <td>{{ m.genre }}</td>
+                    <td>{{ m.duration }}</td>
+                    <td>{{ m.rating }}</td>
+                    <td>{{ m.total_tickets_sold }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if movies.has_other_pages %}
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if movies.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ movies.previous_page_number }}">&laquo;</a></li>
+                {% endif %}
+                {% for num in movies.paginator.page_range %}
+                    <li class="page-item{% if movies.number == num %} active{% endif %}"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                {% endfor %}
+                {% if movies.has_next %}
+                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ movies.next_page_number }}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

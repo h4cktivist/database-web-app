@@ -8,6 +8,8 @@ from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.timezone import now
 from django.conf import settings
+from django.db.models import Count
+from django.db.models.functions import Lower
 
 from .models import Customers, Halls, Movies, Positions, SessionTypes, Staff, Sessions, Tickets, Sales
 from .forms import CustomerForm, HallsForm, MoviesForm, PositionsForm, SessionTypesForm, StaffForm, SessionsForm, TicketsForm, SalesForm
@@ -491,7 +493,7 @@ def delete_sale(request, sale_id):
     return render(request, 'delete.html', {'sale': sale})
 
 
-def report(request):
+def sales_report(request):
     queryset = Sales.objects.all()
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
@@ -509,7 +511,7 @@ def report(request):
 
     if request.method == 'POST' and 'export_excel' in request.POST:
         def background_task():
-            export_to_excel(queryset)
+            export_to_excel(queryset, 'sales')
         thread = threading.Thread(target=background_task)
         thread.start()
         return redirect('report')
@@ -535,20 +537,78 @@ def report(request):
     return render(request, 'report/report.html', context)
 
 
-def export_to_excel(queryset):
-    columns = [
-        'ID', 'Дата', 'Сотрудник', 'Покупатель', 'Стоимость', 'Дата и время сеанса'
-    ]
+def staff_report(request):
+    queryset = Staff.objects.annotate(
+        total_sales=Count('sales')
+    ).order_by('-total_sales')
+    staff = request.GET.get('staff')
+    if staff:
+        queryset = queryset.filter(staff_id=staff)
+
+    if request.method == 'POST' and 'export_excel' in request.POST:
+        def background_task():
+            export_to_excel(queryset, 'staff')
+        thread = threading.Thread(target=background_task)
+        thread.start()
+        return redirect('staff-report')
+
+    paginator = Paginator(queryset, 25)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    context = {
+        'employees': page_obj,
+        'all_staff': Staff.objects.all(),
+    }
+    return render(request, 'report/staff_report.html', context)
+
+
+def movies_report(request):
+    queryset = Movies.objects.annotate(
+        total_tickets_sold=Count('sessions__tickets')
+    ).order_by('-total_tickets_sold')
+
+    movie_id = request.GET.get('movie')
+    genre = request.GET.get('genre')
+
+    if movie_id:
+        queryset = queryset.filter(movie_id=movie_id)
+    if genre:
+        queryset = queryset.filter(genre=genre)
+
+    if request.method == 'POST' and 'export_excel' in request.POST:
+        def background_task():
+            export_to_excel(queryset, 'movies')
+        thread = threading.Thread(target=background_task)
+        thread.start()
+        return redirect('movies-report')
+
+    paginator = Paginator(queryset, 25)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    unique_genres = Movies.objects.order_by(Lower('genre')).values_list('genre', flat=True).distinct()
+    context = {
+        'movies': page_obj,
+        'all_movies': Movies.objects.all(),
+        'all_genres': unique_genres,
+    }
+    return render(request, 'report/movies_report.html', context)
+
+
+def export_to_excel(queryset, report_type):
     workbook = openpyxl.Workbook()
     sheet = workbook.active
-    sheet.append(columns)
-    for sale in queryset:
-        staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
-        customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
-        session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
-        sheet.append([
-            sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime
-        ])
 
     doc = Document()
     section = doc.sections[0]
@@ -556,22 +616,84 @@ def export_to_excel(queryset):
     new_width, new_height = section.page_height, section.page_width
     section.page_width = new_width
     section.page_height = new_height
-    doc.add_heading('Отчет по продажам', 0)
 
-    table = doc.add_table(rows=1, cols=len(columns))
-    hdr_cells = table.rows[0].cells
-    for i, column_name in enumerate(columns):
-        hdr_cells[i].text = column_name
+    if report_type == 'sales':
+        columns = [
+            'ID', 'Дата', 'Сотрудник', 'Покупатель', 'Стоимость', 'Дата и время сеанса'
+        ]
+        sheet.append(columns)
+        for sale in queryset:
+            staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
+            customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
+            session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
+            sheet.append([
+                sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime
+            ])
 
-    for sale in queryset:
-        row_cells = table.add_row().cells
-        staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
-        customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
-        session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
-        for i, cell_data in enumerate([sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime]):
-            row_cells[i].text = str(cell_data)
+        doc.add_heading('Отчет по продажам', 0)
 
-    filename = f"report_{now().strftime('%Y%m%d_%H%M%S')}"
+        table = doc.add_table(rows=1, cols=len(columns))
+        hdr_cells = table.rows[0].cells
+        for i, column_name in enumerate(columns):
+            hdr_cells[i].text = column_name
+
+        for sale in queryset:
+            row_cells = table.add_row().cells
+            staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
+            customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
+            session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
+            for i, cell_data in enumerate([sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime]):
+                row_cells[i].text = str(cell_data)
+
+        filename = f"sales_report_{now().strftime('%Y%m%d_%H%M%S')}"
+
+    elif report_type == 'staff':
+        columns = ['ID', 'Имя', 'Фамилия', 'Отчество', 'Должность', 'Кол-во продаж']
+        sheet.append(columns)
+        for staff in queryset:
+            sheet.append([
+                staff.staff_id, staff.first_name, staff.last_name, staff.middle_name, staff.position.title, staff.total_sales
+            ])
+
+        doc.add_heading('Отчет по сотрудникам', 0)
+
+        table = doc.add_table(rows=1, cols=len(columns))
+        hdr_cells = table.rows[0].cells
+        for i, column_name in enumerate(columns):
+            hdr_cells[i].text = column_name
+
+        for staff in queryset:
+            row_cells = table.add_row().cells
+            for i, cell_data in enumerate(
+                    [staff.staff_id, staff.first_name, staff.last_name, staff.middle_name, staff.position.title, staff.total_sales]):
+                row_cells[i].text = str(cell_data)
+
+        filename = f"staff_report_{now().strftime('%Y%m%d_%H%M%S')}"
+
+    elif report_type == 'movies':
+        columns = ['ID', 'Название', 'Жанр', 'Длительность', 'Рейтинг', 'Кол-во билетов']
+        sheet.append(columns)
+        for movie in queryset:
+            sheet.append([
+                movie.movie_id, movie.title, movie.genre, movie.duration, movie.rating,
+                movie.total_tickets_sold
+            ])
+
+        doc.add_heading('Отчет по фильмам', 0)
+
+        table = doc.add_table(rows=1, cols=len(columns))
+        hdr_cells = table.rows[0].cells
+        for i, column_name in enumerate(columns):
+            hdr_cells[i].text = column_name
+
+        for movie in queryset:
+            row_cells = table.add_row().cells
+            for i, cell_data in enumerate(
+                    [movie.movie_id, movie.title, movie.genre, movie.duration, movie.rating, movie.total_tickets_sold]):
+                row_cells[i].text = str(cell_data)
+
+        filename = f"movies_report_{now().strftime('%Y%m%d_%H%M%S')}"
+
     filepath = os.path.join(settings.MEDIA_ROOT, 'reports', filename)
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     workbook.save(f'{filepath}.xlsx')

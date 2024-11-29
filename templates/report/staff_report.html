@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Отчет{% endblock %}
+
+{% block content %}
+    <h2>Отчет по сотрудникам</h2>
+
+    <form method="get">
+        <div class="form-group">
+            <label for="staff">Сотрудник:</label>
+            <select class="form-control" id="staff" name="staff">
+                <option value="">Все сотрудники</option>
+                {% for staff in all_staff %}
+                    <option value="{{ staff.staff_id }}" {% if staff.staff_id == staff %}selected{% endif %}>{{ staff }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Фильтр</button>
+    </form>
+    <br>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="export_excel" class="btn btn-info mb-3">Экспорт в Excel и Word</button>
+    </form>
+    <br>
+
+    <table class="table table-striped" style="width: 1500px;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Отчество</th>
+                <th>Должность</th>
+                <th>Кол-во продаж</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in employees %}
+                <tr>
+                    <td>{{ e.staff_id }}</td>
+                    <td>{{ e.first_name }}</td>
+                    <td>{{ e.last_name }}</td>
+                    <td>{{ e.middle_name }}</td>
+                    <td>{{ e.position }}</td>
+                    <td>{{ e.total_sales  }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if employees.has_other_pages %}
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if employees.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ employees.previous_page_number }}">&laquo;</a></li>
+                {% endif %}
+                {% for num in employees.paginator.page_range %}
+                    <li class="page-item{% if employees.number == num %} active{% endif %}"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                {% endfor %}
+                {% if employees.has_next %}
+                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ employees.next_page_number }}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}
