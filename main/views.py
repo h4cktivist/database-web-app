@@ -622,26 +622,22 @@ def export_to_excel(queryset, report_type):
             'ID', 'Дата', 'Сотрудник', 'Покупатель', 'Стоимость', 'Дата и время сеанса'
         ]
         sheet.append(columns)
-        for sale in queryset:
-            staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
-            customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
-            session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
-            sheet.append([
-                sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime
-            ])
 
         doc.add_heading('Отчет по продажам', 0)
-
         table = doc.add_table(rows=1, cols=len(columns))
         hdr_cells = table.rows[0].cells
         for i, column_name in enumerate(columns):
             hdr_cells[i].text = column_name
 
         for sale in queryset:
-            row_cells = table.add_row().cells
             staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
             customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
             session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
+
+            sheet.append([
+                sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime
+            ])
+            row_cells = table.add_row().cells
             for i, cell_data in enumerate([sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime]):
                 row_cells[i].text = str(cell_data)
 
@@ -650,10 +646,6 @@ def export_to_excel(queryset, report_type):
     elif report_type == 'staff':
         columns = ['ID', 'Имя', 'Фамилия', 'Отчество', 'Должность', 'Кол-во продаж']
         sheet.append(columns)
-        for staff in queryset:
-            sheet.append([
-                staff.staff_id, staff.first_name, staff.last_name, staff.middle_name, staff.position.title, staff.total_sales
-            ])
 
         doc.add_heading('Отчет по сотрудникам', 0)
 
@@ -663,9 +655,19 @@ def export_to_excel(queryset, report_type):
             hdr_cells[i].text = column_name
 
         for staff in queryset:
+            if staff.position is None:
+                data = [
+                    staff.staff_id, staff.first_name, staff.last_name, staff.middle_name, None, staff.total_sales
+                ]
+
+            else:
+                data = [
+                    staff.staff_id, staff.first_name, staff.last_name, staff.middle_name, staff.position.title, staff.total_sales
+                ]
+
+            sheet.append(data)
             row_cells = table.add_row().cells
-            for i, cell_data in enumerate(
-                    [staff.staff_id, staff.first_name, staff.last_name, staff.middle_name, staff.position.title, staff.total_sales]):
+            for i, cell_data in enumerate(data):
                 row_cells[i].text = str(cell_data)
 
         filename = f"staff_report_{now().strftime('%Y%m%d_%H%M%S')}"
@@ -673,20 +675,19 @@ def export_to_excel(queryset, report_type):
     elif report_type == 'movies':
         columns = ['ID', 'Название', 'Жанр', 'Длительность', 'Рейтинг', 'Кол-во билетов']
         sheet.append(columns)
-        for movie in queryset:
-            sheet.append([
-                movie.movie_id, movie.title, movie.genre, movie.duration, movie.rating,
-                movie.total_tickets_sold
-            ])
 
         doc.add_heading('Отчет по фильмам', 0)
-
         table = doc.add_table(rows=1, cols=len(columns))
         hdr_cells = table.rows[0].cells
         for i, column_name in enumerate(columns):
             hdr_cells[i].text = column_name
 
         for movie in queryset:
+            data = [
+                movie.movie_id, movie.title, movie.genre, movie.duration, movie.rating,
+                movie.total_tickets_sold
+            ]
+            sheet.append(data)
             row_cells = table.add_row().cells
             for i, cell_data in enumerate(
                     [movie.movie_id, movie.title, movie.genre, movie.duration, movie.rating, movie.total_tickets_sold]):
