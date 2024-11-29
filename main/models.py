@@ -6,6 +6,8 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 
 class Customers(models.Model):
@@ -85,6 +87,14 @@ class Sales(models.Model):
     def __str__(self):
         return f'Продажа {self.sale_id} | {self.ticket.price if self.ticket is not None else ""} руб.'
 
+    def clean(self):
+        existing_sessions = Sales.objects.filter(
+            ticket=self.ticket,
+        )
+        if existing_sessions.exists() and self.pk != existing_sessions.first().pk:
+            raise ValidationError(_("Данный билет уже продан."))
+        super().clean()
+
 
 class SessionTypes(models.Model):
     session_type_id = models.AutoField(primary_key=True)
@@ -114,6 +124,16 @@ class Sessions(models.Model):
 
     def __str__(self):
         return f'{self.session_date} {self.session_time} | {self.movie.title if self.movie is not None else ""}'
+
+    def clean(self):
+        existing_sessions = Sessions.objects.filter(
+            session_date=self.session_date,
+            session_time=self.session_time,
+            hall=self.hall,
+        )
+        if existing_sessions.exists() and self.pk != existing_sessions.first().pk:
+            raise ValidationError(_("Сеанс на данное время, дату и зал уже существует."))
+        super().clean()
 
 
 class Staff(models.Model):
@@ -147,3 +167,13 @@ class Tickets(models.Model):
         ordering = ['ticket_id']
         verbose_name = 'Ticket'
         db_table = 'tickets'
+
+    def clean(self):
+        existing_sessions = Tickets.objects.filter(
+            session=self.session,
+            row_number=self.row_number,
+            seat_number=self.seat_number,
+        )
+        if existing_sessions.exists() and self.pk != existing_sessions.first().pk:
+            raise ValidationError(_("Билет на данный сеанс с таким местом уже сущестует."))
+        super().clean()

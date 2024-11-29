@@ -153,6 +153,13 @@ class TicketsForm(forms.ModelForm):
 
 
 class SalesForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        unsold_tickets = Tickets.objects.exclude(
+            session__in=Sales.objects.all().values_list('ticket__session', flat=True)
+        )
+        self.fields['ticket'].queryset = unsold_tickets
+
     def clean(self):
         cleaned_data = super().clean()
         sale_date = cleaned_data.get("date")
@@ -171,10 +178,14 @@ class SalesForm(forms.ModelForm):
             'payment_type': 'Тип оплаты',
             'customer': 'Покупатель',
         }
+        PAYMENT_TYPES = [
+            ('Наличные', 'Наличные'),
+            ('Карта', 'Карта'),
+        ]
         widgets = {
             'ticket': forms.Select(attrs={'class': 'form-control', 'required': True}),
             'staff': forms.Select(attrs={'class': 'form-control', 'required': True}),
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'required': True}),
-            'payment_type': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'payment_type': forms.Select(choices=PAYMENT_TYPES, attrs={'class': 'form-control', 'required': True}),
             'customer': forms.Select(attrs={'class': 'form-control', 'required': True}),
         }
