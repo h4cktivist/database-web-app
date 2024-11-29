@@ -1,8 +1,9 @@
 import os
 import threading
 import openpyxl
+from docx import Document
+from docx.enum.section import WD_ORIENT
 
-from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.timezone import now
@@ -535,11 +536,12 @@ def report(request):
 
 
 def export_to_excel(queryset):
+    columns = [
+        'ID', 'Дата', 'Сотрудник', 'Покупатель', 'Стоимость', 'Дата и время сеанса'
+    ]
     workbook = openpyxl.Workbook()
     sheet = workbook.active
-    sheet.append([
-        'ID', 'Дата', 'Сотрудник', 'Покупатель', 'Стоимость', 'Дата и время сеанса'
-    ])
+    sheet.append(columns)
     for sale in queryset:
         staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
         customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
@@ -548,9 +550,31 @@ def export_to_excel(queryset):
             sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime
         ])
 
-    filename = f"report_{now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    doc = Document()
+    section = doc.sections[0]
+    section.orientation = WD_ORIENT.LANDSCAPE
+    new_width, new_height = section.page_height, section.page_width
+    section.page_width = new_width
+    section.page_height = new_height
+    doc.add_heading('Отчет по продажам', 0)
+
+    table = doc.add_table(rows=1, cols=len(columns))
+    hdr_cells = table.rows[0].cells
+    for i, column_name in enumerate(columns):
+        hdr_cells[i].text = column_name
+
+    for sale in queryset:
+        row_cells = table.add_row().cells
+        staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
+        customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
+        session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
+        for i, cell_data in enumerate([sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime]):
+            row_cells[i].text = str(cell_data)
+
+    filename = f"report_{now().strftime('%Y%m%d_%H%M%S')}"
     filepath = os.path.join(settings.MEDIA_ROOT, 'reports', filename)
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    workbook.save(filepath)
+    workbook.save(f'{filepath}.xlsx')
+    doc.save(f'{filepath}.docx')
 
     return redirect('report')

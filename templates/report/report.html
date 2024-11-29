@@ -35,6 +35,11 @@
         <button type="submit" class="btn btn-primary">Фильтр</button>
     </form>
     <br>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="export_excel" class="btn btn-info mb-3">Экспорт в Excel и Word</button>
+    </form>
+    <br>
 
     <table class="table table-striped" style="width: 1500px;">
         <thead>
@@ -60,11 +65,6 @@
             {% endfor %}
         </tbody>
     </table>
-
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" name="export_excel" class="btn btn-info mb-3">Экспорт в Excel</button>
-    </form>
 
     {% if sales.has_other_pages %}
         <nav aria-label="Page navigation example">
