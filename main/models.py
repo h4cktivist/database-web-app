@@ -123,7 +123,7 @@ class Sessions(models.Model):
         db_table = 'sessions'
 
     def __str__(self):
-        return f'{self.session_date} {self.session_time} | {self.movie.title if self.movie is not None else ""}'
+        return f'{self.session_date} {self.session_time} | {self.movie.title if self.movie is not None else ""} | {self.hall}'
 
     def clean(self):
         existing_sessions = Sessions.objects.filter(

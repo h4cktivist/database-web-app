@@ -60,4 +60,6 @@ urlpatterns = [
     path('report/', views.sales_report, name='report'),
     path('staff-report/', views.staff_report, name='staff-report'),
     path('movies-report/', views.movies_report, name='movies-report'),
+
+    path('get_rows/', views.get_rows),
 ]

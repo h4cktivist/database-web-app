@@ -135,6 +135,9 @@ class SessionsForm(forms.ModelForm):
 
 
 class TicketsForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['session'].queryset = Sessions.objects.exclude(hall=None)
     class Meta:
         model = Tickets
         fields = ['price', 'session', 'row_number', 'seat_number']
@@ -147,8 +150,8 @@ class TicketsForm(forms.ModelForm):
         widgets = {
             'price': forms.NumberInput(attrs={'class': 'form-control', 'required': True, 'min': 0}),
             'session': forms.Select(attrs={'class': 'form-control', 'required': True}),
-            'row_number': forms.NumberInput(attrs={'class': 'form-control', 'required': True, 'min': 1}),
-            'seat_number': forms.NumberInput(attrs={'class': 'form-control', 'required': True, 'min': 1}),
+            'row_number': forms.Select(attrs={'class': 'form-control row-select', 'required': True, 'min': 1}),
+            'seat_number': forms.Select(choices=[(i, i) for i in range(1, 21)], attrs={'class': 'form-control seat-select', 'required': True, 'min': 1}),
         }
 
 

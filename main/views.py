@@ -1,6 +1,7 @@
 import os
 import threading
 import openpyxl
+from django.http import JsonResponse
 from docx import Document
 from docx.enum.section import WD_ORIENT
 
@@ -707,3 +708,12 @@ def export_to_excel(queryset, report_type):
     doc.save(f'{filepath}.docx')
 
     return redirect('report')
+
+
+def get_rows(request):
+    session_id = request.GET.get('session_id')
+    session = Sessions.objects.get(pk=session_id)
+    hall_capacity = session.hall.capacity
+    rows = list(range(1, hall_capacity // 20 + 1))
+
+    return JsonResponse({'rows': rows})
