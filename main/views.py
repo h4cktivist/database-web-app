@@ -1,9 +1,12 @@
+import os
 import threading
 import openpyxl
 
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils.timezone import now
+from django.conf import settings
 
 from .models import Customers, Halls, Movies, Positions, SessionTypes, Staff, Sessions, Tickets, Sales
 from .forms import CustomerForm, HallsForm, MoviesForm, PositionsForm, SessionTypesForm, StaffForm, SessionsForm, TicketsForm, SalesForm
@@ -504,7 +507,11 @@ def report(request):
         queryset = queryset.filter(customer_id=customer)
 
     if request.method == 'POST' and 'export_excel' in request.POST:
-        return export_to_excel(queryset)
+        def background_task():
+            export_to_excel(queryset)
+        thread = threading.Thread(target=background_task)
+        thread.start()
+        return redirect('report')
 
     paginator = Paginator(queryset, 25)
     page_number = request.GET.get('page')
@@ -541,7 +548,9 @@ def export_to_excel(queryset):
             sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime
         ])
 
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="sales_report.xlsx"'
-    workbook.save(response)
-    return response
+    filename = f"report_{now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    filepath = os.path.join(settings.MEDIA_ROOT, 'reports', filename)
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    workbook.save(filepath)
+
+    return redirect('report')
