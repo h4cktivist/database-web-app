@@ -3,5 +3,24 @@
 {% block title %}Главная{% endblock %}
 
 {% block content %}
+
     <h1>Добро пожаловать в Базу данных кинотеатра!</h1>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card mt-5">
+            <div class="card-body">
+              <h5 class="card-title">Информация о базе данных</h5>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">Имя базы данных: {{ db_name }}</li>
+                <li class="list-group-item">Пользователь: {{ db_user }}</li>
+                <li class="list-group-item">Хост: {{ db_host }}:{{ db_port }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
 {% endblock %}
