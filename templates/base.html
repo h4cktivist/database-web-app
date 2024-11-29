@@ -26,33 +26,24 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'customers' %}">Покупатели</a>
+
+            <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Таблицы
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <a class="dropdown-item" href="{% url 'customers' %}">Покупатели</a>
+              <a class="dropdown-item" href="{% url 'halls' %}">Залы</a>
+              <a class="dropdown-item" href="{% url 'movies' %}">Фильмы</a>
+              <a class="dropdown-item" href="{% url 'positions' %}">Должности</a>
+              <a class="dropdown-item" href="{% url 'session_types' %}">Типы сеансов</a>
+              <a class="dropdown-item" href="{% url 'staff' %}">Сотрудники</a>
+              <a class="dropdown-item" href="{% url 'sessions' %}">Сеансы</a>
+              <a class="dropdown-item" href="{% url 'tickets' %}">Билеты</a>
+              <a class="dropdown-item" href="{% url 'sales' %}">Продажи</a>
+            </div>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'halls' %}">Залы</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'movies' %}">Фильмы</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'positions' %}">Должности</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'session_types' %}">Типы сеансов</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'staff' %}">Сотрудники</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'sessions' %}">Сеансы</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'tickets' %}">Билеты</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'sales' %}">Продажи</a>
-          </li>
+
           <li class="nav-item active">
             <a class="nav-link" href="{% url 'report' %}">Отчет по продажам</a>
           </li>
