@@ -8,19 +8,19 @@
     <form method="get">
         <div class="form-group">
             <label for="staff">Фильм:</label>
-            <select class="form-control" id="staff" name="movie">
+            <select class="form-control select2" id="staff" name="movie">
                 <option value="">Все фильмы</option>
                 {% for movie in all_movies %}
-                    <option value="{{ movie.movie_id }}" {% if movie.movie_id == movie %}selected{% endif %}>{{ movie }}</option>
+                    <option value="{{ movie.movie_id }}" {% if movie.movie_id == selected_movie %}selected{% endif %}>{{ movie }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="form-group">
             <label for="genre-filter">Жанр:</label>
-            <select class="form-control" id="genre-filter" name="genre">
+            <select class="form-control select2" id="genre-filter" name="genre">
                 <option value="">Все жанры</option>
                 {% for genre in all_genres %}
-                    <option value="{{ genre }}">{{ genre }}</option>
+                    <option value="{{ genre }}" {% if genre == selected_genre %}selected{% endif %}>{{ genre }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -31,6 +31,9 @@
         {% csrf_token %}
         <button type="submit" name="export_excel" class="btn btn-info mb-3">Экспорт в Excel и Word</button>
     </form>
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
     <br>
 
     <table class="table table-striped">

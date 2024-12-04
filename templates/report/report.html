@@ -8,27 +8,27 @@
     <form method="get">
         <div class="form-group">
             <label for="start_date">Дата начала:</label>
-            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+            <input type="date" max="9999-12-31" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
         </div>
         <div class="form-group">
             <label for="end_date">Дата окончания:</label>
-            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+            <input type="date" max="9999-12-31" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
         </div>
         <div class="form-group">
             <label for="staff">Сотрудник:</label>
-            <select class="form-control" id="staff" name="staff">
+            <select class="form-control select2" id="staff" name="staff">
                 <option value="">Все сотрудники</option>
                 {% for staff in staffs %}
-                    <option value="{{ staff.staff_id }}" {% if staff.staff_id == staff %}selected{% endif %}>{{ staff }}</option>
+                    <option value="{{ staff.staff_id }}" {% if staff.staff_id == selected_staff %}selected{% endif %}>{{ staff }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="form-group">
             <label for="customer">Покупатель:</label>
-            <select class="form-control" id="customer" name="customer">
+            <select class="form-control select2" id="customer" name="customer">
                 <option value="">Все покупатели</option>
                 {% for customer in customers %}
-                    <option value="{{ customer.customer_id }}" {% if customer.customer_id == customer %}selected{% endif %}>{{ customer }}</option>
+                    <option value="{{ customer.customer_id }}" {% if customer.customer_id == selected_customer %}selected{% endif %}>{{ customer }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -39,9 +39,12 @@
         {% csrf_token %}
         <button type="submit" name="export_excel" class="btn btn-info mb-3">Экспорт в Excel и Word</button>
     </form>
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
     <br>
 
-    <table class="table table-striped">
+    <table class="table table-striped" style="width: 1200px">
         <thead>
             <tr>
                 <th>ID</th>

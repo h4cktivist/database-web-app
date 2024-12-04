@@ -11,6 +11,7 @@ from django.utils.timezone import now
 from django.conf import settings
 from django.db.models import Count
 from django.db.models.functions import Lower
+from django.contrib import messages
 
 from .models import Customers, Halls, Movies, Positions, SessionTypes, Staff, Sessions, Tickets, Sales
 from .forms import CustomerForm, HallsForm, MoviesForm, PositionsForm, SessionTypesForm, StaffForm, SessionsForm, TicketsForm, SalesForm
@@ -323,7 +324,7 @@ def sessions(request):
         'session_types': SessionTypes.objects.all(),
         'start_date': start_date,
         'end_date': end_date,
-        'session_type': session_type,
+        'selected_session_type': int(session_type) if session_type is not None and len(session_type) > 0 else None,
     }
     return render(request, 'sessions/sessions.html', context)
 
@@ -458,8 +459,8 @@ def sales(request):
         'customers': Customers.objects.all(),
         'start_date': start_date,
         'end_date': end_date,
-        'staff': staff,
-        'customer': customer,
+        'selected_staff': int(staff) if staff is not None and len(staff) > 0 else None,
+        'selected_customer': int(customer) if customer is not None and len(customer) > 0 else None,
     }
     return render(request, 'sales/sales.html', context)
 
@@ -521,6 +522,7 @@ def sales_report(request):
             export_to_excel(queryset, 'sales')
         thread = threading.Thread(target=background_task)
         thread.start()
+        messages.success(request, 'Отчет экспортирован')
         return redirect('report')
 
     paginator = Paginator(queryset, 25)
@@ -538,8 +540,8 @@ def sales_report(request):
         'customers': Customers.objects.all(),
         'start_date': start_date,
         'end_date': end_date,
-        'staff': staff,
-        'customer': customer,
+        'selected_staff': int(staff) if staff is not None and len(staff) > 0 else None,
+        'selected_customer': int(customer) if customer is not None and len(customer) > 0 else None,
     }
     return render(request, 'report/report.html', context)
 
@@ -557,6 +559,7 @@ def staff_report(request):
             export_to_excel(queryset, 'staff')
         thread = threading.Thread(target=background_task)
         thread.start()
+        messages.success(request, 'Отчет экспортирован')
         return redirect('staff-report')
 
     paginator = Paginator(queryset, 25)
@@ -571,6 +574,7 @@ def staff_report(request):
     context = {
         'employees': page_obj,
         'all_staff': Staff.objects.all(),
+        'selected_staff': int(staff) if staff is not None and len(staff) > 0 else None
     }
     return render(request, 'report/staff_report.html', context)
 
@@ -593,6 +597,8 @@ def movies_report(request):
             export_to_excel(queryset, 'movies')
         thread = threading.Thread(target=background_task)
         thread.start()
+        messages.success(request, 'Отчет экспортирован')
+
         return redirect('movies-report')
 
     paginator = Paginator(queryset, 25)
@@ -609,6 +615,8 @@ def movies_report(request):
         'movies': page_obj,
         'all_movies': Movies.objects.all(),
         'all_genres': unique_genres,
+        'selected_movie': int(movie_id) if movie_id is not None and len(movie_id) > 0 else None,
+        'selected_genre': genre if genre is not None and len(genre) > 0 else None
     }
     return render(request, 'report/movies_report.html', context)
 

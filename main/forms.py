@@ -162,12 +162,12 @@ class SalesForm(forms.ModelForm):
             self.fields['ticket'].queryset = Tickets.objects.filter(pk=self.instance.ticket.pk) | Tickets.objects.exclude(
                 session__in=Sales.objects.exclude(pk=self.instance.pk).values_list('ticket__session', flat=True)
             )
+            self.fields['staff'].queryset = Staff.objects.filter(pk=self.instance.staff.pk) | Staff.objects.filter(position__title='Кассир')
         else:
-            self.fields['ticket'] = Tickets.objects.exclude(
+            self.fields['ticket'].queryset = Tickets.objects.exclude(
                 session__in=Sales.objects.all().values_list('ticket__session', flat=True)
             )
-        cashiers = Staff.objects.filter(position__title='Кассир')
-        self.fields['staff'].queryset = cashiers
+            self.fields['staff'].queryset = Staff.objects.filter(position__title='Кассир')
 
     def clean(self):
         cleaned_data = super().clean()

@@ -8,10 +8,10 @@
     <form method="get">
         <div class="form-group">
             <label for="staff">Сотрудник:</label>
-            <select class="form-control" id="staff" name="staff">
+            <select class="form-control select2" id="staff" name="staff">
                 <option value="">Все сотрудники</option>
                 {% for staff in all_staff %}
-                    <option value="{{ staff.staff_id }}" {% if staff.staff_id == staff %}selected{% endif %}>{{ staff }}</option>
+                    <option value="{{ staff.staff_id }}" {% if staff.staff_id == selected_staff %}selected{% endif %}>{{ staff }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -22,6 +22,9 @@
         {% csrf_token %}
         <button type="submit" name="export_excel" class="btn btn-info mb-3">Экспорт в Excel и Word</button>
     </form>
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
     <br>
 
     <table class="table table-striped">

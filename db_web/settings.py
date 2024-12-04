@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'db_web.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cinema',  # Имя вашей базы данных
+        'NAME': 'cinema1',  # Имя вашей базы данных
         'USER': 'postgres',       # Имя пользователя базы данных
         'PASSWORD': 'root', # Пароль пользователя базы данных
         'HOST': 'localhost',       # Хост базы данных (обычно '127.0.0.1' или 'localhost')
