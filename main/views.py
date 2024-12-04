@@ -303,6 +303,8 @@ def sessions(request):
     end_date = request.GET.get('end_date')
     session_type = request.GET.get('session_type')
 
+    if start_date and end_date and start_date > end_date:
+        start_date, end_date = end_date, start_date
     if start_date:
         queryset = queryset.filter(session_date__gte=start_date)
     if end_date:
@@ -370,6 +372,8 @@ def tickets(request):
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
 
+    if min_price and max_price and min_price > max_price:
+        min_price, max_price = max_price, min_price
     if min_price:
         queryset = queryset.filter(price__gte=min_price)
     if max_price:
@@ -435,6 +439,8 @@ def sales(request):
     staff = request.GET.get('staff')
     customer = request.GET.get('customer')
 
+    if start_date and end_date and start_date > end_date:
+        start_date, end_date = end_date, start_date
     if start_date:
         queryset = queryset.filter(date__gte=start_date)
     if end_date:
@@ -508,6 +514,8 @@ def sales_report(request):
     staff = request.GET.get('staff')
     customer = request.GET.get('customer')
 
+    if start_date and end_date and start_date > end_date:
+        start_date, end_date = end_date, start_date
     if start_date:
         queryset = queryset.filter(date__gte=start_date)
     if end_date:
