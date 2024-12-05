@@ -28,16 +28,40 @@ def index(request):
 
 
 def customers(request):
-    customer_list = Customers.objects.all()
+    sort_by = request.GET.get('sort_by', 'customer_id')
+    sort_order = request.GET.get('sort_order', 'asc')
+
+    columns = [
+        {'field': 'customer_id', 'label': 'ID'},
+        {'field': 'first_name', 'label': 'Имя'},
+        {'field': 'last_name', 'label': 'Фамилия'},
+        {'field': 'phone', 'label': 'Телефон'},
+        {'field': 'email', 'label': 'Email'},
+    ]
+    for col in columns:
+        if col['field'] == sort_by:
+            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
+        else:
+            col['sort_order'] = 'asc'
+
+    customer_list = Customers.objects.all().order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
     paginator = Paginator(customer_list, 25)
-    page = request.GET.get('page')
+    page = request.GET.get('page', 1)
     try:
         customers = paginator.page(page)
     except PageNotAnInteger:
         customers = paginator.page(1)
     except EmptyPage:
         customers = paginator.page(paginator.num_pages)
-    return render(request, 'customers/customers.html', {'customers': customers})
+
+    context = {
+        'customers': customers,
+        'columns': columns,
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+        'page_number': page,
+    }
+    return render(request, 'customers/customers.html', context)
 
 
 def customer_detail(request, id):
@@ -77,8 +101,29 @@ def delete_customer(request, id):
 
 
 def halls(request):
-    hall_list = Halls.objects.all().order_by('hall_id')
-    return render(request, 'halls/halls.html', {'halls': hall_list})
+    sort_by = request.GET.get('sort_by', 'hall_id')
+    sort_order = request.GET.get('sort_order', 'asc')
+
+    columns = [
+        {'field': 'hall_id', 'label': 'ID'},
+        {'field': 'name', 'label': 'Название'},
+        {'field': 'capacity', 'label': 'Вместимость'},
+    ]
+    for col in columns:
+        if col['field'] == sort_by:
+            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
+        else:
+            col['sort_order'] = 'asc'
+
+    hall_list = Halls.objects.all().order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
+
+    context = {
+        'halls': hall_list,
+        'columns': columns,
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+    }
+    return render(request, 'halls/halls.html', context)
 
 
 def hall_detail(request, id):
@@ -118,16 +163,41 @@ def delete_hall(request, id):
 
 
 def movies(request):
-    movie_list = Movies.objects.all()
+    sort_by = request.GET.get('sort_by', 'movie_id')
+    sort_order = request.GET.get('sort_order', 'asc')
+    page_number = request.GET.get('page', 1)
+
+    columns = [
+        {'field': 'movie_id', 'label': 'ID'},
+        {'field': 'title', 'label': 'Название'},
+        {'field': 'genre', 'label': 'Жанр'},
+        {'field': 'duration', 'label': 'Длительность'},
+        {'field': 'age_restriction', 'label': 'Ограничение'},
+        {'field': 'rating', 'label': 'Рейтинг'},
+    ]
+    for col in columns:
+        if col['field'] == sort_by:
+            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
+        else:
+            col['sort_order'] = 'asc'
+
+    movie_list = Movies.objects.all().order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
     paginator = Paginator(movie_list, 25)
-    page = request.GET.get('page')
     try:
-        movies = paginator.page(page)
+        movies = paginator.page(page_number)
     except PageNotAnInteger:
         movies = paginator.page(1)
     except EmptyPage:
         movies = paginator.page(paginator.num_pages)
-    return render(request, 'movies/movies.html', {'movies': movies})
+
+    context = {
+        'movies': movies,
+        'columns': columns,
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+        'page_number': page_number,
+    }
+    return render(request, 'movies/movies.html', context)
 
 
 def movie_detail(request, movie_id):
@@ -167,8 +237,28 @@ def delete_movie(request, movie_id):
 
 
 def positions(request):
-    position_list = Positions.objects.all()
-    return render(request, 'positions/positions.html', {'positions': position_list})
+    sort_by = request.GET.get('sort_by', 'position_id')
+    sort_order = request.GET.get('sort_order', 'asc')
+
+    columns = [
+        {'field': 'position_id', 'label': 'ID'},
+        {'field': 'title', 'label': 'Название'},
+    ]
+    for col in columns:
+        if col['field'] == sort_by:
+            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
+        else:
+            col['sort_order'] = 'asc'
+
+    position_list = Positions.objects.all().order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
+
+    context = {
+        'positions': position_list,
+        'columns': columns,
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+    }
+    return render(request, 'positions/positions.html', context)
 
 
 def position_detail(request, position_id):
@@ -208,8 +298,28 @@ def delete_position(request, position_id):
 
 
 def session_types(request):
-    session_type_list = SessionTypes.objects.all()
-    return render(request, 'session_types/session_types.html', {'session_types': session_type_list})
+    sort_by = request.GET.get('sort_by', 'session_type_id')
+    sort_order = request.GET.get('sort_order', 'asc')
+
+    columns = [
+        {'field': 'session_type_id', 'label': 'ID'},
+        {'field': 'name', 'label': 'Название'},
+    ]
+    for col in columns:
+        if col['field'] == sort_by:
+            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
+        else:
+            col['sort_order'] = 'asc'
+
+    session_type_list = SessionTypes.objects.all().order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
+
+    context = {
+        'session_types': session_type_list,
+        'columns': columns,
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+    }
+    return render(request, 'session_types/session_types.html', context)
 
 
 def session_type_detail(request, session_type_id):
@@ -249,16 +359,39 @@ def delete_session_type(request, session_type_id):
 
 
 def staff(request):
-    staff_list = Staff.objects.all()
+    sort_by = request.GET.get('sort_by', 'staff_id')
+    sort_order = request.GET.get('sort_order', 'asc')
+
+    columns = [
+        {'field': 'staff_id', 'label': 'ID'},
+        {'field': 'first_name', 'label': 'ФИО'},
+        {'field': 'position', 'label': 'Должность'},
+        {'field': 'phone', 'label': 'Телефон'},
+    ]
+    for col in columns:
+        if col['field'] == sort_by:
+            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
+        else:
+            col['sort_order'] = 'asc'
+
+    staff_list = Staff.objects.all().order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
     paginator = Paginator(staff_list, 25)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get('page', 1)
     try:
         page_obj = paginator.get_page(page_number)
     except PageNotAnInteger:
         page_obj = paginator.get_page(1)
     except EmptyPage:
         page_obj = paginator.get_page(paginator.num_pages)
-    return render(request, 'staff/staff.html', {'staff': page_obj})
+
+    context = {
+        'staff': page_obj,
+        'columns': columns,
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+        'page_number': int(page_number)
+    }
+    return render(request, 'staff/staff.html', context)
 
 
 def staff_detail(request, staff_id):

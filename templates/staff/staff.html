@@ -8,10 +8,13 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>ФИО</th>
-                <th>Должность</th>
-                <th>Телефон</th>
+                {% for column in columns %}
+                    <th>
+                        <a href="?page={{ page_number }}&sort_by={{ column.field }}&sort_order={{ column.sort_order }}">
+                            {{ column.label }}
+                        </a>
+                    </th>
+                {% endfor %}
                 <th>Действия</th>
             </tr>
         </thead>
@@ -36,13 +39,13 @@
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-center">
                 {% if staff.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ staff.previous_page_number }}">&laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ staff.previous_page_number }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">&laquo;</a></li>
                 {% endif %}
                 {% for num in staff.paginator.page_range %}
-                    <li class="page-item{% if staff.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    <li class="page-item{% if staff.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">{{ num }}</a></li>
                 {% endfor %}
                 {% if staff.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ staff.next_page_number }}">&raquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ staff.next_page_number }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">&raquo;</a></li>
                 {% endif %}
             </ul>
         </nav>

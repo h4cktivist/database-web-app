@@ -8,8 +8,13 @@
     <table class="table table-striped" style="width: 500px;">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Название</th>
+                {% for column in columns %}
+                    <th>
+                        <a href="?sort_by={{ column.field }}&sort_order={{ column.sort_order }}">
+                            {{ column.label }}
+                        </a>
+                    </th>
+                {% endfor %}
                 <th>Действия</th>
             </tr>
         </thead>

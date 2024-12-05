@@ -8,12 +8,13 @@
     <table class="table table-striped" style="width: 1200px;">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Название</th>
-                <th>Жанр</th>
-                <th>Длительность (мин.)</th>
-                <th>Ограничение</th>
-                <th>Рейтинг</th>
+                {% for column in columns %}
+                    <th>
+                        <a href="?page={{ page_number }}&sort_by={{ column.field }}&sort_order={{ column.sort_order }}">
+                            {{ column.label }}
+                        </a>
+                    </th>
+                {% endfor %}
                 <th>Описание</th>
                 <th>Действия</th>
             </tr>
@@ -40,26 +41,14 @@
     {% if movies.has_other_pages %}
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-center">
-                {% if movie.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ movie.previous_page_number }}" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                            <span class="sr-only">Previous</span>
-                        </a>
-                    </li>
+                {% if movies.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ movies.previous_page_number }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">&laquo;</a></li>
                 {% endif %}
                 {% for num in movies.paginator.page_range %}
-                    <li class="page-item{% if movies.number == num %} active{% endif %}">
-                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                    </li>
+                    <li class="page-item{% if movies.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">{{ num }}</a></li>
                 {% endfor %}
                 {% if movies.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ movies.next_page_number }}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                            <span class="sr-only">Next</span>
-                        </a>
-                    </li>
+                    <li class="page-item"><a class="page-link" href="?page={{ movies.next_page_number }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">&raquo;</a></li>
                 {% endif %}
             </ul>
         </nav>
