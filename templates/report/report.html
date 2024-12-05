@@ -5,7 +5,7 @@
 {% block content %}
     <h2>Отчет по продажам</h2>
 
-    <form method="get">
+    <form method="get" id="filter-form">
         <div class="form-group">
             <label for="start_date">Дата начала:</label>
             <input type="date" max="9999-12-31" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
@@ -33,6 +33,9 @@
             </select>
         </div>
         <button type="submit" class="btn btn-primary">Фильтр</button>
+    </form>
+    <form method="get" action="{% url 'report' %}" class="mt-1">
+        <button type="submit" class="btn btn-secondary">Сбросить фильтры</button>
     </form>
     <br>
     <form method="post">

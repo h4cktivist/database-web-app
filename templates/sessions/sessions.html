@@ -30,6 +30,9 @@
         </div>
         <button type="submit" class="btn btn-primary">Фильтр</button>
     </form>
+    <form method="get" action="{% url 'sessions' %}" class="mt-1">
+        <button type="submit" class="btn btn-secondary">Сбросить фильтры</button>
+    </form>
     <br>
 
     <table class="table table-striped" style="width: 1300px;">

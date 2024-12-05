@@ -26,6 +26,9 @@
         </div>
         <button type="submit" class="btn btn-primary">Фильтр</button>
     </form>
+    <form method="get" action="{% url 'movies-report' %}" class="mt-1">
+        <button type="submit" class="btn btn-secondary">Сбросить фильтры</button>
+    </form>
     <br>
     <form method="post">
         {% csrf_token %}
