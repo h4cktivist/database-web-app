@@ -10,8 +10,15 @@
             <tr>
                 {% for column in columns %}
                     <th>
-                        <a href="?sort_by={{ column.field }}&sort_order={{ column.sort_order }}">
+                        <a class="text-dark" href="?sort_by={{ column.field }}&sort_order={{ column.sort_order }}">
                             {{ column.label }}
+                            {% if column.field == sort_by %}
+                                {% if column.sort_order == 'asc' %}
+                                    <span>▲</span>
+                                {% else %}
+                                    <span>▼</span>
+                                {% endif %}
+                            {% endif %}
                         </a>
                     </th>
                 {% endfor %}

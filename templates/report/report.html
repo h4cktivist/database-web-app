@@ -52,7 +52,7 @@
             <tr>
                 {% for column in columns %}
                     <th>
-                        <a href="?page={{ page_number }}&sort_by={{ column.field }}&sort_order={{ column.sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}&staff={{ selected_staff }}&customer={{ selected_customer }}">
+                        <a class="text-dark" href="?page={{ page_number }}&sort_by={{ column.field }}&sort_order={{ column.sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}&staff={{ selected_staff }}&customer={{ selected_customer }}">
                             {{ column.label }}
                             {% if column.field == sort_by %}
                                 {% if column.sort_order == 'asc' %}
