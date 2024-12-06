@@ -38,12 +38,13 @@
     <table class="table table-striped" style="width: 1300px;">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Дата</th>
-                <th>Время</th>
-                <th>Тип сеанса</th>
-                <th>Фильм</th>
-                <th>Зал</th>
+                {% for column in columns %}
+                    <th>
+                        <a href="?page={{ page_number }}&sort_by={{ column.field }}&sort_order={{ column.sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}&session_type={{ selected_session_type }}">
+                            {{ column.label }}
+                        </a>
+                    </th>
+                {% endfor %}
                 <th>Действия</th>
             </tr>
         </thead>
@@ -70,13 +71,13 @@
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-center">
                 {% if sessions.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if session_type %}session_type={{ session_type }}&{% endif %}page={{ sessions.previous_page_number }}">&laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ sessions.previous_page_number }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}&session_type={{ selected_session_type }}">&laquo;</a></li>
                 {% endif %}
                 {% for num in sessions.paginator.page_range %}
-                    <li class="page-item{% if sessions.number == num %} active{% endif %}"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if session_type %}session_type={{ session_type }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                    <li class="page-item{% if sessions.number == num %} active{% endif %}"><a class="page-link" href="?page={{ num }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}&session_type={{ selected_session_type }}">{{ num }}</a></li>
                 {% endfor %}
                 {% if sessions.has_next %}
-                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if session_type %}session_type={{ session_type }}&{% endif %}page={{ sessions.next_page_number }}">&raquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ sessions.next_page_number }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}&session_type={{ selected_session_type }}">&raquo;</a></li>
                 {% endif %}
             </ul>
         </nav>

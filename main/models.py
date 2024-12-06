@@ -18,7 +18,7 @@ class Customers(models.Model):
     email = models.TextField()
 
     class Meta:
-        ordering = ['customer_id']
+        ordering = ['first_name', 'last_name']
         verbose_name = 'Customer'
         db_table = 'customers'
 
@@ -32,7 +32,7 @@ class Halls(models.Model):
     capacity = models.IntegerField()
 
     class Meta:
-        ordering = ['hall_id']
+        ordering = ['name']
         verbose_name = 'Hall'
         db_table = 'halls'
 
@@ -50,7 +50,7 @@ class Movies(models.Model):
     description = models.TextField()
 
     class Meta:
-        ordering = ['movie_id']
+        ordering = ['title']
         verbose_name = 'Movie'
         db_table = 'movies'
 
@@ -63,7 +63,7 @@ class Positions(models.Model):
     title = models.TextField(blank=True, null=True)
 
     class Meta:
-        ordering = ['position_id']
+        ordering = ['title']
         verbose_name = 'Position'
         db_table = 'positions'
 
@@ -101,7 +101,7 @@ class SessionTypes(models.Model):
     name = models.TextField(blank=True, null=True)
 
     class Meta:
-        ordering = ['session_type_id']
+        ordering = ['name']
         verbose_name = 'Session Type'
         db_table = 'session_types'
 
@@ -118,7 +118,7 @@ class Sessions(models.Model):
     hall = models.ForeignKey(Halls, models.SET_NULL, null=True)
 
     class Meta:
-        ordering = ['-session_date']
+        ordering = ['session_date']
         verbose_name = 'Session'
         db_table = 'sessions'
 
@@ -145,7 +145,7 @@ class Staff(models.Model):
     phone = models.TextField()
 
     class Meta:
-        ordering = ['staff_id']
+        ordering = ['first_name', 'last_name', 'middle_name']
         verbose_name = 'Staff'
         db_table = 'staff'
 
