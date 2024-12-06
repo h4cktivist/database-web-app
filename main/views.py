@@ -616,7 +616,7 @@ def sales(request):
     end_date = request.GET.get('end_date')
     staff = request.GET.get('staff')
     customer = request.GET.get('customer')
-    sort_by = request.GET.get('sort_by', 'ticket_id')
+    sort_by = request.GET.get('sort_by', 'sale_id')
     sort_order = request.GET.get('sort_order', 'asc')
 
     if start_date and end_date and start_date > end_date:
@@ -713,6 +713,8 @@ def sales_report(request):
     end_date = request.GET.get('end_date')
     staff = request.GET.get('staff')
     customer = request.GET.get('customer')
+    sort_by = request.GET.get('sort_by', 'sale_id')
+    sort_order = request.GET.get('sort_order', 'asc')
 
     if start_date and end_date and start_date > end_date:
         start_date, end_date = end_date, start_date
@@ -724,6 +726,22 @@ def sales_report(request):
         queryset = queryset.filter(staff_id=staff)
     if customer:
         queryset = queryset.filter(customer_id=customer)
+
+    columns = [
+        {'field': 'sale_id', 'label': 'ID'},
+        {'field': 'date', 'label': 'Дата'},
+        {'field': 'staff', 'label': 'Сотрудник'},
+        {'field': 'customer', 'label': 'Покупатель'},
+        {'field': 'ticket__price', 'label': 'Стоимость'},
+        {'field': 'ticket__session__session_date', 'label': 'Дата и время сеанса'},
+    ]
+    for col in columns:
+        if col['field'] == sort_by:
+            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
+        else:
+            col['sort_order'] = 'asc'
+
+    queryset = queryset.order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
 
     if request.method == 'POST' and 'export_excel' in request.POST:
         def background_task():
@@ -746,10 +764,14 @@ def sales_report(request):
         'sales': page_obj,
         'staffs': Staff.objects.all(),
         'customers': Customers.objects.all(),
-        'start_date': start_date,
-        'end_date': end_date,
-        'selected_staff': int(staff) if staff is not None and len(staff) > 0 else None,
-        'selected_customer': int(customer) if customer is not None and len(customer) > 0 else None,
+        'start_date': start_date if start_date is not None else '',
+        'end_date': end_date if end_date is not None else '',
+        'selected_staff': int(staff) if staff is not None and len(staff) > 0 else '',
+        'selected_customer': int(customer) if customer is not None and len(customer) > 0 else '',
+        'columns': columns,
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+        'page_number': page_number,
     }
     return render(request, 'report/report.html', context)
 
@@ -758,9 +780,28 @@ def staff_report(request):
     queryset = Staff.objects.annotate(
         total_sales=Count('sales')
     ).order_by('-total_sales')
+
     staff = request.GET.get('staff')
+    sort_by = request.GET.get('sort_by', 'staff_id')
+    sort_order = request.GET.get('sort_order', 'asc')
     if staff:
         queryset = queryset.filter(staff_id=staff)
+
+    columns = [
+        {'field': 'staff_id', 'label': 'ID'},
+        {'field': 'first_name', 'label': 'Имя'},
+        {'field': 'last_name', 'label': 'Фамилия'},
+        {'field': 'middle_name', 'label': 'Отчество'},
+        {'field': 'position', 'label': 'Должность'},
+        {'field': 'total_sales', 'label': 'Кол-во продаж'},
+    ]
+    for col in columns:
+        if col['field'] == sort_by:
+            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
+        else:
+            col['sort_order'] = 'asc'
+
+    queryset = queryset.order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
 
     if request.method == 'POST' and 'export_excel' in request.POST:
         def background_task():
@@ -782,7 +823,11 @@ def staff_report(request):
     context = {
         'employees': page_obj,
         'all_staff': Staff.objects.all(),
-        'selected_staff': int(staff) if staff is not None and len(staff) > 0 else None
+        'selected_staff': int(staff) if staff is not None and len(staff) > 0 else '',
+        'columns': columns,
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+        'page_number': page_number,
     }
     return render(request, 'report/staff_report.html', context)
 
@@ -794,11 +839,29 @@ def movies_report(request):
 
     movie_id = request.GET.get('movie')
     genre = request.GET.get('genre')
+    sort_by = request.GET.get('sort_by', 'movie_id')
+    sort_order = request.GET.get('sort_order', 'asc')
 
     if movie_id:
         queryset = queryset.filter(movie_id=movie_id)
     if genre:
         queryset = queryset.filter(genre=genre)
+
+    columns = [
+        {'field': 'movie_id', 'label': 'ID'},
+        {'field': 'title', 'label': 'Название'},
+        {'field': 'genre', 'label': 'Жанр'},
+        {'field': 'duration', 'label': 'Длительность'},
+        {'field': 'rating', 'label': 'Рейтинг'},
+        {'field': 'total_tickets_sold', 'label': 'Кол-во билетов'},
+    ]
+    for col in columns:
+        if col['field'] == sort_by:
+            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
+        else:
+            col['sort_order'] = 'asc'
+
+    queryset = queryset.order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
 
     if request.method == 'POST' and 'export_excel' in request.POST:
         def background_task():
@@ -823,8 +886,12 @@ def movies_report(request):
         'movies': page_obj,
         'all_movies': Movies.objects.all(),
         'all_genres': unique_genres,
-        'selected_movie': int(movie_id) if movie_id is not None and len(movie_id) > 0 else None,
-        'selected_genre': genre if genre is not None and len(genre) > 0 else None
+        'selected_movie': int(movie_id) if movie_id is not None and len(movie_id) > 0 else '',
+        'selected_genre': genre if genre is not None and len(genre) > 0 else '',
+        'columns': columns,
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+        'page_number': page_number,
     }
     return render(request, 'report/movies_report.html', context)
 

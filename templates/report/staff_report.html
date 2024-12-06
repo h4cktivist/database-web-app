@@ -33,12 +33,20 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Имя</th>
-                <th>Фамилия</th>
-                <th>Отчество</th>
-                <th>Должность</th>
-                <th width="150">Кол-во продаж</th>
+                {% for column in columns %}
+                    <th>
+                        <a href="?page={{ page_number }}&sort_by={{ column.field }}&sort_order={{ column.sort_order }}&staff={{ selected_staff }}">
+                            {{ column.label }}
+                            {% if column.field == sort_by %}
+                                {% if column.sort_order == 'asc' %}
+                                    <span>▲</span>
+                                {% else %}
+                                    <span>▼</span>
+                                {% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                {% endfor %}
             </tr>
         </thead>
         <tbody>
@@ -59,13 +67,13 @@
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-center">
                 {% if employees.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ employees.previous_page_number }}">&laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?{% if staff %}staff={{ staff }}&{% endif %}page={{ employees.previous_page_number }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">&laquo;</a></li>
                 {% endif %}
                 {% for num in employees.paginator.page_range %}
-                    <li class="page-item{% if employees.number == num %} active{% endif %}"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                    <li class="page-item{% if employees.number == num %} active{% endif %}"><a class="page-link" href="?{% if staff %}staff={{ staff }}&{% endif %}page={{ num }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">{{ num }}</a></li>
                 {% endfor %}
                 {% if employees.has_next %}
-                    <li class="page-item"><a class="page-link" href="?{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if staff %}staff={{ staff }}&{% endif %}{% if customer %}customer={{ customer }}&{% endif %}page={{ employees.next_page_number }}">&raquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?{% if staff %}staff={{ staff }}&{% endif %}page={{ employees.next_page_number }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}">&raquo;</a></li>
                 {% endif %}
             </ul>
         </nav>
