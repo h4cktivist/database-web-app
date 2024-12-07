@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Экспортированные отчеты{% endblock %}
+
+{% block content %}
+    <h2>Экспортированные отчеты</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Тип отчета</th>
+                <th>Статус</th>
+                <th>Excel</th>
+                <th>Word</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for er in exported_reports %}
+                <tr>
+                    <td>{{ er.timestamp|date:"Y-m-d H:i:s" }}</td>
+                    <td>{% if er.report_type == 'sales' %}Продажи{% elif er.report_type == 'movies' %}Фильмы{% else %}Сотрудники{% endif %}</td>
+                    <td>{% if er.status == 0 %}В процессе{% else %}Готов{% endif %}</td>
+                    <td>{% if er.status == 1 %}<a href="{% url 'download-report' er.excel_filepath %}">Скачать</a>{% endif %}</td>
+                    <td>{% if er.status == 1 %}<a href="{% url 'download-report' er.word_filepath %}">Скачать</a>{% endif %}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

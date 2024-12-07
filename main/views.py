@@ -1,20 +1,18 @@
 import os
 import threading
-import openpyxl
-from django.http import JsonResponse
-from docx import Document
-from docx.enum.section import WD_ORIENT
 
+from django.http import JsonResponse, FileResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.utils.timezone import now
+
 from django.conf import settings
 from django.db.models import Count, Value as V, CharField
-from django.db.models.functions import Lower, Concat, Cast
+from django.db.models.functions import Lower, Concat
 from django.contrib import messages
 
-from .models import Customers, Halls, Movies, Positions, SessionTypes, Staff, Sessions, Tickets, Sales
+from .models import Customers, Halls, Movies, Positions, SessionTypes, Staff, Sessions, Tickets, Sales, ExportedReports
 from .forms import CustomerForm, HallsForm, MoviesForm, PositionsForm, SessionTypesForm, StaffForm, SessionsForm, TicketsForm, SalesForm
+from .utils import export_report
 
 
 def index(request):
@@ -745,7 +743,7 @@ def sales_report(request):
 
     if request.method == 'POST' and 'export_excel' in request.POST:
         def background_task():
-            export_to_excel(queryset, 'sales')
+            export_report(queryset, 'sales')
         thread = threading.Thread(target=background_task)
         thread.start()
         messages.success(request, 'Отчет экспортирован')
@@ -805,7 +803,7 @@ def staff_report(request):
 
     if request.method == 'POST' and 'export_excel' in request.POST:
         def background_task():
-            export_to_excel(queryset, 'staff')
+            export_report(queryset, 'staff')
         thread = threading.Thread(target=background_task)
         thread.start()
         messages.success(request, 'Отчет экспортирован')
@@ -865,7 +863,7 @@ def movies_report(request):
 
     if request.method == 'POST' and 'export_excel' in request.POST:
         def background_task():
-            export_to_excel(queryset, 'movies')
+            export_report(queryset, 'movies')
         thread = threading.Thread(target=background_task)
         thread.start()
         messages.success(request, 'Отчет экспортирован')
@@ -896,101 +894,22 @@ def movies_report(request):
     return render(request, 'report/movies_report.html', context)
 
 
-def export_to_excel(queryset, report_type):
-    workbook = openpyxl.Workbook()
-    sheet = workbook.active
+def exported_reports(request):
+    queryset = ExportedReports.objects.all().order_by('-timestamp')
+    context = {'exported_reports': queryset}
+    return render(request, 'report/exported_reports.html', context)
 
-    doc = Document()
-    section = doc.sections[0]
-    section.orientation = WD_ORIENT.LANDSCAPE
-    new_width, new_height = section.page_height, section.page_width
-    section.page_width = new_width
-    section.page_height = new_height
 
-    if report_type == 'sales':
-        columns = [
-            'ID', 'Дата', 'Сотрудник', 'Покупатель', 'Стоимость', 'Дата и время сеанса'
-        ]
-        sheet.append(columns)
-
-        doc.add_heading('Отчет по продажам', 0)
-        table = doc.add_table(rows=1, cols=len(columns))
-        hdr_cells = table.rows[0].cells
-        for i, column_name in enumerate(columns):
-            hdr_cells[i].text = column_name
-
-        for sale in queryset:
-            staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
-            customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
-            session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
-
-            sheet.append([
-                sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime
-            ])
-            row_cells = table.add_row().cells
-            for i, cell_data in enumerate([sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime]):
-                row_cells[i].text = str(cell_data)
-
-        filename = f"sales_report_{now().strftime('%Y%m%d_%H%M%S')}"
-
-    elif report_type == 'staff':
-        columns = ['ID', 'Имя', 'Фамилия', 'Отчество', 'Должность', 'Кол-во продаж']
-        sheet.append(columns)
-
-        doc.add_heading('Отчет по сотрудникам', 0)
-
-        table = doc.add_table(rows=1, cols=len(columns))
-        hdr_cells = table.rows[0].cells
-        for i, column_name in enumerate(columns):
-            hdr_cells[i].text = column_name
-
-        for staff in queryset:
-            if staff.position is None:
-                data = [
-                    staff.staff_id, staff.first_name, staff.last_name, staff.middle_name, None, staff.total_sales
-                ]
-
-            else:
-                data = [
-                    staff.staff_id, staff.first_name, staff.last_name, staff.middle_name, staff.position.title, staff.total_sales
-                ]
-
-            sheet.append(data)
-            row_cells = table.add_row().cells
-            for i, cell_data in enumerate(data):
-                row_cells[i].text = str(cell_data)
-
-        filename = f"staff_report_{now().strftime('%Y%m%d_%H%M%S')}"
-
-    elif report_type == 'movies':
-        columns = ['ID', 'Название', 'Жанр', 'Длительность', 'Рейтинг', 'Кол-во билетов']
-        sheet.append(columns)
-
-        doc.add_heading('Отчет по фильмам', 0)
-        table = doc.add_table(rows=1, cols=len(columns))
-        hdr_cells = table.rows[0].cells
-        for i, column_name in enumerate(columns):
-            hdr_cells[i].text = column_name
-
-        for movie in queryset:
-            data = [
-                movie.movie_id, movie.title, movie.genre, movie.duration, movie.rating,
-                movie.total_tickets_sold
-            ]
-            sheet.append(data)
-            row_cells = table.add_row().cells
-            for i, cell_data in enumerate(
-                    [movie.movie_id, movie.title, movie.genre, movie.duration, movie.rating, movie.total_tickets_sold]):
-                row_cells[i].text = str(cell_data)
-
-        filename = f"movies_report_{now().strftime('%Y%m%d_%H%M%S')}"
-
-    filepath = os.path.join(settings.MEDIA_ROOT, 'reports', filename)
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    workbook.save(f'{filepath}.xlsx')
-    doc.save(f'{filepath}.docx')
-
-    return redirect('report')
+def download_report(request, filename):
+    filepath = os.path.join(settings.MEDIA_ROOT, filename)
+    if os.path.exists(filepath):
+        with open(filepath, 'rb') as fh:
+            file_content = fh.read()
+            response = HttpResponse(file_content, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+    else:
+        return HttpResponse("Файл не найден.", status=404)
 
 
 def get_rows(request):

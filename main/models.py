@@ -5,6 +5,8 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
+import datetime
+
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -177,3 +179,16 @@ class Tickets(models.Model):
         if existing_sessions.exists() and self.pk != existing_sessions.first().pk:
             raise ValidationError(_("Билет на данный сеанс с таким местом уже сущестует."))
         super().clean()
+
+
+class ExportedReports(models.Model):
+    report_id = models.AutoField(primary_key=True)
+    report_type = models.TextField()
+    status = models.IntegerField()
+    word_filepath = models.TextField(null=True)
+    excel_filepath = models.TextField(null=True)
+    timestamp = models.DateTimeField(default=datetime.datetime.now())
+
+    class Meta:
+        verbose_name = 'ExportedReport'
+        db_table = 'exported_reports'

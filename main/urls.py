@@ -62,4 +62,7 @@ urlpatterns = [
     path('movies-report/', views.movies_report, name='movies-report'),
 
     path('get_rows/', views.get_rows),
+
+    path('exported-reports/', views.exported_reports, name='exported-reports'),
+    path('download-report/<str:filename>', views.download_report, name='download-report'),
 ]
