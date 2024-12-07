@@ -8,9 +8,20 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Дата</th>
-                <th>Тип отчета</th>
-                <th>Статус</th>
+                {% for column in columns %}
+                    <th>
+                        <a class="text-dark" href="?sort_by={{ column.field }}&sort_order={{ column.sort_order }}">
+                            {{ column.label }}
+                            {% if column.field == sort_by %}
+                                {% if column.sort_order == 'asc' %}
+                                    <span>▲</span>
+                                {% else %}
+                                    <span>▼</span>
+                                {% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                {% endfor %}
                 <th>Excel</th>
                 <th>Word</th>
             </tr>

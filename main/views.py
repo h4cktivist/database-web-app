@@ -11,7 +11,8 @@ from django.db.models.functions import Lower, Concat
 from django.contrib import messages
 
 from .models import Customers, Halls, Movies, Positions, SessionTypes, Staff, Sessions, Tickets, Sales, ExportedReports
-from .forms import CustomerForm, HallsForm, MoviesForm, PositionsForm, SessionTypesForm, StaffForm, SessionsForm, TicketsForm, SalesForm
+from .forms import CustomerForm, HallsForm, MoviesForm, PositionsForm, SessionTypesForm, StaffForm, SessionsForm, \
+    TicketsForm, SalesForm
 from .utils import export_report
 
 
@@ -744,9 +745,10 @@ def sales_report(request):
     if request.method == 'POST' and 'export_excel' in request.POST:
         def background_task():
             export_report(queryset, 'sales')
+
         thread = threading.Thread(target=background_task)
         thread.start()
-        messages.success(request, 'Отчет экспортирован')
+        messages.success(request, 'Экспорт отчета запущен. Детали можно увидеть во вкладке "Экспортированные отчеты"')
         return redirect('report')
 
     paginator = Paginator(queryset, 25)
@@ -804,9 +806,10 @@ def staff_report(request):
     if request.method == 'POST' and 'export_excel' in request.POST:
         def background_task():
             export_report(queryset, 'staff')
+
         thread = threading.Thread(target=background_task)
         thread.start()
-        messages.success(request, 'Отчет экспортирован')
+        messages.success(request, 'Экспорт отчета запущен. Детали можно увидеть во вкладке "Экспортированные отчеты"')
         return redirect('staff-report')
 
     paginator = Paginator(queryset, 25)
@@ -864,9 +867,10 @@ def movies_report(request):
     if request.method == 'POST' and 'export_excel' in request.POST:
         def background_task():
             export_report(queryset, 'movies')
+
         thread = threading.Thread(target=background_task)
         thread.start()
-        messages.success(request, 'Отчет экспортирован')
+        messages.success(request, 'Экспорт отчета запущен. Детали можно увидеть во вкладке "Экспортированные отчеты"')
 
         return redirect('movies-report')
 
@@ -895,8 +899,28 @@ def movies_report(request):
 
 
 def exported_reports(request):
-    queryset = ExportedReports.objects.all().order_by('-timestamp')
-    context = {'exported_reports': queryset}
+    queryset = ExportedReports.objects.all()
+
+    sort_by = request.GET.get('sort_by', '-timestamp')
+    sort_order = request.GET.get('sort_order', 'asc')
+    columns = [
+        {'field': 'timestamp', 'label': 'Дата'},
+        {'field': 'report_type', 'label': 'Тип отчета'},
+        {'field': 'status', 'label': 'Статус'},
+    ]
+    for col in columns:
+        if col['field'] == sort_by:
+            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
+        else:
+            col['sort_order'] = 'asc'
+    queryset = queryset.order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
+
+    context = {
+        'exported_reports': queryset,
+        'columns': columns,
+        'sort_by': sort_by,
+        'sort_order': sort_order
+    }
     return render(request, 'report/exported_reports.html', context)
 
 
@@ -905,7 +929,8 @@ def download_report(request, filename):
     if os.path.exists(filepath):
         with open(filepath, 'rb') as fh:
             file_content = fh.read()
-            response = HttpResponse(file_content, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response = HttpResponse(file_content,
+                                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
     else:
