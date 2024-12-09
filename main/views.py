@@ -530,7 +530,7 @@ def tickets(request):
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
 
-    if min_price and max_price and min_price > max_price:
+    if min_price and max_price and float(min_price) > float(max_price):
         min_price, max_price = max_price, min_price
     if min_price:
         queryset = queryset.filter(price__gte=min_price)
