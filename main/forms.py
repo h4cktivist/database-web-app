@@ -2,21 +2,7 @@ from datetime import datetime
 
 from django import forms
 from django.utils import timezone
-from .models import Halls, Positions, SessionTypes, Staff, Sessions, Tickets, Sales
-
-
-class HallsForm(forms.ModelForm):
-    class Meta:
-        model = Halls
-        fields = ['name', 'capacity']
-        labels = {
-            'name': 'Название зала',
-            'capacity': 'Вместимость',
-        }
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
-            'capacity': forms.NumberInput(attrs={'class': 'form-control', 'required': True, 'min': 1}),
-        }
+from .models import Positions, SessionTypes, Staff, Sessions, Tickets, Sales
 
 
 class PositionsForm(forms.ModelForm):

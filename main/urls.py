@@ -4,12 +4,6 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
 
-    path('halls/', views.halls, name='halls'),
-    path('halls/<int:id>/', views.hall_detail, name='hall_detail'),
-    path('halls/add/', views.add_hall, name='add_hall'),
-    path('halls/<int:id>/edit/', views.edit_hall, name='edit_hall'),
-    path('halls/<int:id>/delete/', views.delete_hall, name='delete_hall'),
-
     path('positions/', views.positions, name='positions'),
     path('positions/add/', views.add_position, name='add_position'),
     path('positions/<int:position_id>/edit/', views.edit_position, name='edit_position'),

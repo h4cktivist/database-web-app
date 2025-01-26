@@ -13,20 +13,7 @@ from django.utils.translation import gettext_lazy as _
 
 from customers.models import Customers
 from movies.models import Movies
-
-
-class Halls(models.Model):
-    hall_id = models.AutoField(primary_key=True)
-    name = models.TextField()
-    capacity = models.IntegerField()
-
-    class Meta:
-        ordering = ['name']
-        verbose_name = 'Hall'
-        db_table = 'halls'
-
-    def __str__(self):
-        return f'{self.name}'
+from halls.models import Halls
 
 
 class Positions(models.Model):
