@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from .models import Sales, Tickets
+from .models import Sales
 
 
 admin.site.register(Sales)
-admin.site.register(Tickets)

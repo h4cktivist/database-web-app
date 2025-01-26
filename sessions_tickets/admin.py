@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Sessions, SessionTypes, Tickets
+
+
+admin.site.register(Sessions)
+admin.site.register(SessionTypes)
+admin.site.register(Tickets)
