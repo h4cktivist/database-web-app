@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -83,11 +87,11 @@ WSGI_APPLICATION = 'db_web.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cinema1',  # Имя вашей базы данных
-        'USER': 'postgres',       # Имя пользователя базы данных
-        'PASSWORD': 'root', # Пароль пользователя базы данных
-        'HOST': 'localhost',       # Хост базы данных (обычно '127.0.0.1' или 'localhost')
-        'PORT': '5432',               # Порт базы данных (по умолчанию 5432)
+        'NAME': str(os.getenv('DB_NAME')),
+        'USER': str(os.getenv('DB_USER')),
+        'PASSWORD': str(os.getenv('DB_PASSWORD')),
+        'HOST': str(os.getenv('DB_HOST')),
+        'PORT': str(os.getenv('DB_PORT')),
     }
 }
 
