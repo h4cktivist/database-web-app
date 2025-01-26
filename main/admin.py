@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import *
+
+from customers.models import Customers
+from movies.models import Movies
+from staff.models import Staff, Positions
+from halls.models import Halls
+from .models import Sales, Sessions, SessionTypes, Tickets
+
 
 admin.site.register(Customers)
 admin.site.register(Halls)

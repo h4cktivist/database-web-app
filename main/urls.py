@@ -4,23 +4,11 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
 
-    path('positions/', views.positions, name='positions'),
-    path('positions/add/', views.add_position, name='add_position'),
-    path('positions/<int:position_id>/edit/', views.edit_position, name='edit_position'),
-    path('positions/<int:position_id>/delete/', views.delete_position, name='delete_position'),
-    path('positions/<int:position_id>/', views.position_detail, name='position_detail'),
-
     path('session_types/', views.session_types, name='session_types'),
     path('session_types/add/', views.add_session_type, name='add_session_type'),
     path('session_types/<int:session_type_id>/edit/', views.edit_session_type, name='edit_session_type'),
     path('session_types/<int:session_type_id>/delete/', views.delete_session_type, name='delete_session_type'),
     path('session_types/<int:session_type_id>/', views.session_type_detail, name='session_type_detail'),
-
-    path('staff/', views.staff, name='staff'),
-    path('staff/add/', views.add_staff, name='add_staff'),
-    path('staff/<int:staff_id>/edit/', views.edit_staff, name='edit_staff'),
-    path('staff/<int:staff_id>/delete/', views.delete_staff, name='delete_staff'),
-    path('staff/<int:staff_id>/', views.staff_detail, name='staff_detail'),
 
     path('sessions/', views.sessions, name='sessions'),
     path('sessions/add/', views.add_session, name='add_session'),
