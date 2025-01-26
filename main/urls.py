@@ -10,12 +10,6 @@ urlpatterns = [
     path('halls/<int:id>/edit/', views.edit_hall, name='edit_hall'),
     path('halls/<int:id>/delete/', views.delete_hall, name='delete_hall'),
 
-    path('movies/', views.movies, name='movies'),
-    path('movies/add/', views.add_movie, name='add_movie'),
-    path('movies/<int:movie_id>/edit/', views.edit_movie, name='edit_movie'),
-    path('movies/<int:movie_id>/delete/', views.delete_movie, name='delete_movie'),
-    path('movies/<int:movie_id>/', views.movie_detail, name='movie_detail'),
-
     path('positions/', views.positions, name='positions'),
     path('positions/add/', views.add_position, name='add_position'),
     path('positions/<int:position_id>/edit/', views.edit_position, name='edit_position'),

@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from customers.models import Customers
+from movies.models import Movies
 
 
 class Halls(models.Model):
@@ -26,24 +27,6 @@ class Halls(models.Model):
 
     def __str__(self):
         return f'{self.name}'
-
-
-class Movies(models.Model):
-    movie_id = models.AutoField(primary_key=True)
-    title = models.TextField()
-    genre = models.TextField()
-    duration = models.IntegerField()
-    age_restriction = models.TextField()
-    rating = models.FloatField()
-    description = models.TextField()
-
-    class Meta:
-        ordering = ['title']
-        verbose_name = 'Movie'
-        db_table = 'movies'
-
-    def __str__(self):
-        return f'{self.title} | {self.genre}'
 
 
 class Positions(models.Model):
