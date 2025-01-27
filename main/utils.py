@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+
 import openpyxl
 from django.http import FileResponse, HttpResponse
 from docx import Document
@@ -6,6 +8,7 @@ from docx.enum.section import WD_ORIENT
 
 from django.utils.timezone import now
 from django.conf import settings
+from openpyxl.styles import Font, Alignment
 
 from .models import ExportedReports
 
@@ -27,6 +30,20 @@ def make_record(report_type, status=0, report_id=None, filepath=None):
         record.save()
 
 
+def adjust_columns(sheet):
+    for col in sheet.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2) * 1.2
+        sheet.column_dimensions[column].width = adjusted_width
+
+
 def export_report(queryset, report_type):
     record_id = make_record(report_type)
 
@@ -41,86 +58,91 @@ def export_report(queryset, report_type):
     section.page_height = new_height
 
     if report_type == 'sales':
-        columns = [
-            'ID', 'Дата', 'Сотрудник', 'Покупатель', 'Стоимость', 'Дата и время сеанса'
+        headers = [
+            "ID",
+            "Дата",
+            "Сотрудник",
+            "Покупатель",
+            "Стоимость",
+            "Дата и время сеанса",
         ]
-        sheet.append(columns)
+        for col_num, header in enumerate(headers, 1):
+            cell = sheet.cell(row=1, column=col_num)
+            cell.value = header
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal='center')
 
-        doc.add_heading('Отчет по продажам', 0)
-        table = doc.add_table(rows=1, cols=len(columns))
-        hdr_cells = table.rows[0].cells
-        for i, column_name in enumerate(columns):
-            hdr_cells[i].text = column_name
+        for row_num, sale in enumerate(queryset, 2):
+            staff_name = f"{sale.get('staff__first_name', '')} {sale.get('staff__last_name', '')}" if sale.get(
+                'staff__first_name') and sale.get('staff__last_name') else ''
+            customer_name = f"{sale.get('customer__first_name', '')} {sale.get('customer__last_name', '')}" if sale.get(
+                'customer__first_name') and sale.get('customer__last_name') else ''
+            session_datetime = f"{sale.get('ticket__session__session_date', '')} {sale.get('ticket__session__session_time', '')}" if sale.get(
+                'ticket__session__session_date') and sale.get('ticket__session__session_time') else ''
 
-        for sale in queryset:
-            staff_name = f"{sale.staff.first_name} {sale.staff.last_name}"
-            customer_name = f"{sale.customer.first_name} {sale.customer.last_name}"
-            session_datetime = f"{sale.ticket.session.session_date} {sale.ticket.session.session_time}"
-
-            sheet.append([
-                sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime
-            ])
-            row_cells = table.add_row().cells
-            for i, cell_data in enumerate([sale.sale_id, sale.date, staff_name, customer_name, sale.ticket.price, session_datetime]):
-                row_cells[i].text = str(cell_data)
+            sheet.cell(row=row_num, column=1, value=sale.get('sale_id'))
+            sheet.cell(row=row_num, column=2,
+                       value=sale.get('date', '').strftime('%Y-%m-%d') if sale.get('date') else sale.get('date', ''))
+            sheet.cell(row=row_num, column=3, value=staff_name)
+            sheet.cell(row=row_num, column=4, value=customer_name)
+            sheet.cell(row=row_num, column=5, value=sale.get('ticket__price'))
+            sheet.cell(row=row_num, column=6, value=session_datetime)
 
         filename = f"sales_report_{now().strftime('%Y%m%d_%H%M%S')}"
 
     elif report_type == 'staff':
         columns = ['ID', 'Имя', 'Фамилия', 'Отчество', 'Должность', 'Кол-во продаж']
-        sheet.append(columns)
+        for col_num, column in enumerate(columns, 1):
+            cell = sheet.cell(row=1, column=col_num)
+            cell.value = column
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal='center')
 
-        doc.add_heading('Отчет по сотрудникам', 0)
+        for row_num, staff in enumerate(queryset, 2):
+            sheet.cell(row=row_num, column=1, value=staff.get('staff_id'))
+            sheet.cell(row=row_num, column=2, value=staff.get('first_name'))
+            sheet.cell(row=row_num, column=3, value=staff.get('last_name'))
+            sheet.cell(row=row_num, column=4, value=staff.get('middle_name', ''))
+            sheet.cell(row=row_num, column=5, value=staff.get('position__title', ''))
+            sheet.cell(row=row_num, column=6, value=staff.get('total_sales', 0))
 
-        table = doc.add_table(rows=1, cols=len(columns))
-        hdr_cells = table.rows[0].cells
-        for i, column_name in enumerate(columns):
-            hdr_cells[i].text = column_name
-
-        for staff in queryset:
-            if staff.position is None:
-                data = [
-                    staff.staff_id, staff.first_name, staff.last_name, staff.middle_name, None, staff.total_sales
-                ]
-
-            else:
-                data = [
-                    staff.staff_id, staff.first_name, staff.last_name, staff.middle_name, staff.position.title, staff.total_sales
-                ]
-
-            sheet.append(data)
-            row_cells = table.add_row().cells
-            for i, cell_data in enumerate(data):
-                row_cells[i].text = str(cell_data)
+        for col in sheet.columns:
+            max_length = 0
+            column = col[0].column_letter
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = (max_length + 2) * 1.2
+            sheet.column_dimensions[column].width = adjusted_width
 
         filename = f"staff_report_{now().strftime('%Y%m%d_%H%M%S')}"
 
     elif report_type == 'movies':
         columns = ['ID', 'Название', 'Жанр', 'Длительность', 'Рейтинг', 'Кол-во билетов']
-        sheet.append(columns)
+        for col_num, column in enumerate(columns, 1):
+            cell = sheet.cell(row=1, column=col_num)
+            cell.value = column
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal='center')
 
-        doc.add_heading('Отчет по фильмам', 0)
-        table = doc.add_table(rows=1, cols=len(columns))
-        hdr_cells = table.rows[0].cells
-        for i, column_name in enumerate(columns):
-            hdr_cells[i].text = column_name
-
-        for movie in queryset:
-            data = [
-                movie.movie_id, movie.title, movie.genre, movie.duration, movie.rating,
-                movie.total_tickets_sold
-            ]
-            sheet.append(data)
-            row_cells = table.add_row().cells
-            for i, cell_data in enumerate(
-                    [movie.movie_id, movie.title, movie.genre, movie.duration, movie.rating, movie.total_tickets_sold]):
-                row_cells[i].text = str(cell_data)
+        for row_num, movie in enumerate(queryset, 2):
+            sheet.cell(row=row_num, column=1, value=movie.get('movie_id'))
+            sheet.cell(row=row_num, column=2, value=movie.get('title'))
+            sheet.cell(row=row_num, column=3, value=movie.get('genre'))
+            sheet.cell(row=row_num, column=4, value=movie.get('duration'))
+            sheet.cell(row=row_num, column=5, value=movie.get('rating'))
+            sheet.cell(row=row_num, column=6, value=movie.get('total_tickets_sold', 0))
 
         filename = f"movies_report_{now().strftime('%Y%m%d_%H%M%S')}"
+
+    adjust_columns(sheet)
 
     filepath = os.path.join(settings.MEDIA_ROOT, 'reports', filename)
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     workbook.save(f'{filepath}.xlsx')
-    doc.save(f'{filepath}.docx')
 
     make_record(report_type, status=1, report_id=record_id, filepath=filepath)
+    return f'{filepath}.xlsx'

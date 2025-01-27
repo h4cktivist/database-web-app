@@ -1,5 +1,4 @@
 import os
-import threading
 
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -17,7 +16,7 @@ from staff.models import Staff
 from sessions_tickets.models import Sessions
 
 from .forms import SalesForm
-from .utils import export_report
+from .tasks import export_report_task
 
 
 def index(request):
@@ -128,7 +127,7 @@ def delete_sale(request, sale_id):
 
 
 def sales_report(request):
-    queryset = Sales.objects.all()
+    queryset = Sales.objects.select_related('staff', 'customer', 'ticket', 'ticket__session').all()
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     staff = request.GET.get('staff')
@@ -164,11 +163,18 @@ def sales_report(request):
     queryset = queryset.order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
 
     if request.method == 'POST' and 'export_excel' in request.POST:
-        def background_task():
-            export_report(queryset, 'sales')
-
-        thread = threading.Thread(target=background_task)
-        thread.start()
+        task = export_report_task.delay(list(queryset.values(
+            'sale_id',
+            'date',
+            'payment_type',
+            'staff__first_name',
+            'staff__last_name',
+            'customer__first_name',
+            'customer__last_name',
+            'ticket__price',
+            'ticket__session__session_date',
+            'ticket__session__session_time'
+        )), 'sales')
         messages.success(request, 'Экспорт отчета запущен. Детали можно увидеть во вкладке "Экспортированные отчеты"')
         return redirect('report')
 
@@ -198,7 +204,7 @@ def sales_report(request):
 
 
 def staff_report(request):
-    queryset = Staff.objects.annotate(
+    queryset = Staff.objects.select_related('position').annotate(
         total_sales=Count('sales')
     ).order_by('-total_sales')
 
@@ -225,11 +231,15 @@ def staff_report(request):
     queryset = queryset.order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
 
     if request.method == 'POST' and 'export_excel' in request.POST:
-        def background_task():
-            export_report(queryset, 'staff')
-
-        thread = threading.Thread(target=background_task)
-        thread.start()
+        task = export_report_task.delay(
+            list(queryset.values(
+                'staff_id',
+                'first_name',
+                'last_name',
+                'middle_name',
+                'position__title',
+                'total_sales'
+            )), 'staff')
         messages.success(request, 'Экспорт отчета запущен. Детали можно увидеть во вкладке "Экспортированные отчеты"')
         return redirect('staff-report')
 
@@ -286,11 +296,7 @@ def movies_report(request):
     queryset = queryset.order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
 
     if request.method == 'POST' and 'export_excel' in request.POST:
-        def background_task():
-            export_report(queryset, 'movies')
-
-        thread = threading.Thread(target=background_task)
-        thread.start()
+        task = export_report_task.delay(list(queryset.values()), 'movies')
         messages.success(request, 'Экспорт отчета запущен. Детали можно увидеть во вкладке "Экспортированные отчеты"')
 
         return redirect('movies-report')
