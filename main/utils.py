@@ -1,33 +1,16 @@
 import os
-from datetime import datetime
 
 import openpyxl
-from django.http import FileResponse, HttpResponse
+from openpyxl.styles import Font, Alignment
 from docx import Document
 from docx.enum.section import WD_ORIENT
 
 from django.utils.timezone import now
 from django.conf import settings
-from openpyxl.styles import Font, Alignment
 
-from .models import ExportedReports
-
-
-def make_record(report_type, status=0, report_id=None, filepath=None):
-    if status == 0:
-        record = ExportedReports(
-            report_type=report_type,
-            status=status,
-        )
-        record.save()
-        return record.report_id
-
-    else:
-        record = ExportedReports.objects.get(report_id=report_id)
-        record.status = status
-        record.word_filepath = f'{filepath}.docx'
-        record.excel_filepath = f'{filepath}.xlsx'
-        record.save()
+from celery import current_app
+from celery.result import AsyncResult
+from celery import states
 
 
 def adjust_columns(sheet):
@@ -45,8 +28,6 @@ def adjust_columns(sheet):
 
 
 def export_report(queryset, report_type):
-    record_id = make_record(report_type)
-
     workbook = openpyxl.Workbook()
     sheet = workbook.active
 
@@ -144,5 +125,30 @@ def export_report(queryset, report_type):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     workbook.save(f'{filepath}.xlsx')
 
-    make_record(report_type, status=1, report_id=record_id, filepath=filepath)
     return f'{filepath}.xlsx'
+
+
+def get_task_info(task_id):
+    async_result = AsyncResult(task_id, app=current_app)
+    if async_result.status == states.PENDING:
+        return "Ожидает выполнения"
+    elif async_result.status == states.STARTED:
+        return "Выполняется"
+    elif async_result.status == states.SUCCESS:
+        return "Выполнен"
+    elif async_result.status == states.FAILURE:
+        return "Ошибка"
+    else:
+        return "Неизвестный статус"
+
+
+def get_task_result(task_id):
+    async_result = AsyncResult(task_id, app=current_app)
+    if async_result.ready():
+        try:
+            result = async_result.get()
+            return result
+        except Exception as e:
+            return {"error": f"Ошибка при выполнении задачи: {e}"}
+    else:
+        return {"status": async_result.status}

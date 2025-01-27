@@ -41,16 +41,3 @@ class Sales(models.Model):
         if existing_sessions.exists() and self.pk != existing_sessions.first().pk:
             raise ValidationError(_("Данный билет уже продан."))
         super().clean()
-
-
-class ExportedReports(models.Model):
-    report_id = models.AutoField(primary_key=True)
-    report_type = models.TextField()
-    status = models.IntegerField()
-    word_filepath = models.TextField(null=True)
-    excel_filepath = models.TextField(null=True)
-    timestamp = models.DateTimeField(default=datetime.datetime.now())
-
-    class Meta:
-        verbose_name = 'ExportedReport'
-        db_table = 'exported_reports'

@@ -5,11 +5,12 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from django.conf import settings
+from django.utils import timezone
 from django.db.models import Count
 from django.db.models.functions import Lower
 from django.contrib import messages
 
-from .models import Sales, ExportedReports
+from .models import Sales
 from customers.models import Customers
 from movies.models import Movies
 from staff.models import Staff
@@ -17,6 +18,7 @@ from sessions_tickets.models import Sessions
 
 from .forms import SalesForm
 from .tasks import export_report_task
+from .utils import get_task_info, get_task_result
 
 
 def index(request):
@@ -175,6 +177,10 @@ def sales_report(request):
             'ticket__session__session_date',
             'ticket__session__session_time'
         )), 'sales')
+        request.session['reports'].append({'task_id': task.id,
+                                           'report_type': 'sales',
+                                           'start_time': timezone.now().strftime("%Y-%m-%d %H:%M:%S")})
+        request.session.modified = True
         messages.success(request, 'Экспорт отчета запущен. Детали можно увидеть во вкладке "Экспортированные отчеты"')
         return redirect('report')
 
@@ -240,6 +246,10 @@ def staff_report(request):
                 'position__title',
                 'total_sales'
             )), 'staff')
+        request.session['reports'].append({'task_id': task.id,
+                                           'report_type': 'staff',
+                                           'start_time': timezone.now().strftime("%Y-%m-%d %H:%M:%S")})
+        request.session.modified = True
         messages.success(request, 'Экспорт отчета запущен. Детали можно увидеть во вкладке "Экспортированные отчеты"')
         return redirect('staff-report')
 
@@ -297,6 +307,10 @@ def movies_report(request):
 
     if request.method == 'POST' and 'export_excel' in request.POST:
         task = export_report_task.delay(list(queryset.values()), 'movies')
+        request.session['reports'].append({'task_id': task.id,
+                                           'report_type': 'movies',
+                                           'start_time': timezone.now().strftime("%Y-%m-%d %H:%M:%S")})
+        request.session.modified = True
         messages.success(request, 'Экспорт отчета запущен. Детали можно увидеть во вкладке "Экспортированные отчеты"')
 
         return redirect('movies-report')
@@ -326,27 +340,13 @@ def movies_report(request):
 
 
 def exported_reports(request):
-    queryset = ExportedReports.objects.all()
-
-    sort_by = request.GET.get('sort_by', '-timestamp')
-    sort_order = request.GET.get('sort_order', 'asc')
-    columns = [
-        {'field': 'timestamp', 'label': 'Дата'},
-        {'field': 'report_type', 'label': 'Тип отчета'},
-        {'field': 'status', 'label': 'Статус'},
-    ]
-    for col in columns:
-        if col['field'] == sort_by:
-            col['sort_order'] = 'desc' if sort_order == 'asc' else 'asc'
-        else:
-            col['sort_order'] = 'asc'
-    queryset = queryset.order_by(f"{'-' if sort_order == 'desc' else ''}{sort_by}")
+    reports = request.session['reports']
+    for report in reports:
+        report['task_status'] = get_task_info(report['task_id'])
+        report['task_result'] = get_task_result(report['task_id'])
 
     context = {
-        'exported_reports': queryset,
-        'columns': columns,
-        'sort_by': sort_by,
-        'sort_order': sort_order
+        'reports': reports,
     }
     return render(request, 'report/exported_reports.html', context)
 

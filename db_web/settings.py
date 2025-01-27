@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'staff',
     'sessions_tickets',
     'main',
-    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -58,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'main.middleware.InitializeSessionReportsMiddleware',
 ]
 
 ROOT_URLCONF = 'db_web.urls'

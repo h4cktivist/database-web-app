@@ -8,32 +8,25 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                {% for column in columns %}
-                    <th>
-                        <a class="text-dark" href="?sort_by={{ column.field }}&sort_order={{ column.sort_order }}">
-                            {{ column.label }}
-                            {% if column.field == sort_by %}
-                                {% if column.sort_order == 'asc' %}
-                                    <span>▲</span>
-                                {% else %}
-                                    <span>▼</span>
-                                {% endif %}
-                            {% endif %}
-                        </a>
-                    </th>
-                {% endfor %}
-                <th>Excel</th>
-                <th>Word</th>
+                <th>Дата и время</th>
+                <th>Тип отчета</th>
+                <th>Статус</th>
+                <th>Результат</th>
             </tr>
         </thead>
         <tbody>
-            {% for er in exported_reports %}
+            {% for report in reports %}
                 <tr>
-                    <td>{{ er.timestamp|date:"Y-m-d H:i:s" }}</td>
-                    <td>{% if er.report_type == 'sales' %}Продажи{% elif er.report_type == 'movies' %}Фильмы{% else %}Сотрудники{% endif %}</td>
-                    <td>{% if er.status == 0 %}В процессе{% else %}Готов{% endif %}</td>
-                    <td>{% if er.status == 1 %}<a href="{% url 'download-report' er.excel_filepath %}">Скачать</a>{% endif %}</td>
-                    <td>{% if er.status == 1 %}<a href="{% url 'download-report' er.word_filepath %}">Скачать</a>{% endif %}</td>
+                    <td>{{ report.start_time }}</td>
+                    <td>{% if report.report_type == 'sales' %}Продажи{% elif report.report_type == 'movies' %}Фильмы{% else %}Сотрудники{% endif %}</td>
+                    <td>{{ report.task_status }}</td>
+                    <td>
+                        {% if report.task_result.file_path %}
+                            <a href="{% url 'download-report' report.task_result.file_path %}">Скачать</a>
+                        {% elif report.task_result.error %}
+                            {{ report.task_result.error }}
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
